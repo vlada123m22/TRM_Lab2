@@ -21,36 +21,36 @@
             z-index: 999;
             text-align: center;
             pointer-events: none;
+            max-width: 90vw;
         }
         
         #story-panel {
             background: rgba(0, 0, 0, 0.8);
             color: #fff;
-            padding: 20px 30px;
+            padding: 15px 20px;
             border-radius: 15px;
-            max-width: 80vw;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             border: 2px solid rgba(147, 51, 234, 0.5);
         }
         
         #story-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #a78bfa;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
         }
         
         #story-text {
-            font-size: 16px;
-            line-height: 1.6;
+            font-size: 14px;
+            line-height: 1.4;
             color: #e0e7ff;
         }
         
         #progress-bar {
-            margin-top: 15px;
-            height: 8px;
+            margin-top: 10px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
             overflow: hidden;
@@ -66,16 +66,15 @@
         
         .interaction-hint {
             position: fixed;
-            bottom: 30px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(167, 139, 250, 0.9);
             color: #fff;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 25px;
             font-size: 14px;
-            pointer-events: all;
-            cursor: pointer;
+            pointer-events: none;
             animation: pulse 2s infinite;
             z-index: 998;
             display: none;
@@ -86,32 +85,27 @@
             50% { transform: translateX(-50%) scale(1.05); }
         }
         
-        .fade-in {
-            animation: fadeIn 1s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-
         #debug-info {
             position: fixed;
             bottom: 10px;
+            left: 10px;
             right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
             padding: 10px;
-            font-size: 12px;
+            font-size: 11px;
             border-radius: 5px;
             z-index: 1000;
+            font-family: monospace;
+            max-height: 60px;
+            overflow-y: auto;
         }
     </style>
 </head>
 <body>
     <!-- UI Overlay -->
     <div id="ui-overlay">
-        <div id="story-panel" class="fade-in">
+        <div id="story-panel">
             <div id="story-title">✨ The Magical Garden ✨</div>
             <div id="story-text">Point your camera at the first marker to begin your journey...</div>
             <div id="progress-bar">
@@ -120,44 +114,46 @@
         </div>
     </div>
     
-    <div id="interaction-hint" class="interaction-hint">👆 Tap the object to interact!</div>
+    <div id="interaction-hint" class="interaction-hint">👆 Tap the glowing seed!</div>
     
     <!-- Debug Info -->
-    <div id="debug-info">Marker Status: Searching...</div>
+    <div id="debug-info">Initializing AR... Please wait...</div>
 
     <!-- AR Scene -->
     <a-scene
         vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; precision: medium;"
+        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true;"
         embedded
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono; patternRatio: 0.75; sourceWidth:640; sourceHeight:480; displayWidth: 640; displayHeight: 480;">
         
-        <!-- Camera -->
-        <a-entity camera></a-entity>
+        <!-- Camera with wider field of view -->
+        <a-entity camera="fov: 80; zoom: 0.8" look-controls="enabled: false"></a-entity>
 
-        <!-- Marker 1: The Seed (Starting Point) -->
+        <!-- Marker 1: The Seed -->
         <a-marker 
             id="marker1" 
             type="pattern" 
             url="markers/pattern-marker1.patt" 
-            emitevents="true" 
-            cursor="rayOrigin: mouse"
-            smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.01"
-            smoothThreshold="2">
+            emitevents="true"
+            raycaster="objects: .clickable"
+            cursor="fuse: false; rayOrigin: mouse">
             
-            <a-entity id="seed-group" position="0 0 0" scale="0.5 0.5 0.5">
+            <!-- Container scaled down significantly -->
+            <a-entity id="seed-container" position="0 0 0" scale="0.25 0.25 0.25">
+                
+                <!-- Base platform for reference -->
+                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
+                
                 <!-- Magical Seed -->
                 <a-sphere 
                     id="seed"
-                    position="0 0.5 0" 
-                    radius="0.3" 
+                    position="0 1.5 0" 
+                    radius="1" 
                     color="#8b5cf6"
-                    metalness="0.7"
+                    metalness="0.8"
                     roughness="0.2"
                     emissive="#8b5cf6"
-                    emissiveIntensity="0.5"
+                    emissiveIntensity="0.8"
                     class="clickable">
                     <a-animation
                         attribute="rotation"
@@ -169,20 +165,48 @@
                     <a-animation
                         attribute="position"
                         dur="2000"
+                        from="0 1.5 0"
+                        to="0 2 0"
                         direction="alternate"
-                        to="0 0.7 0"
                         easing="ease-in-out"
                         repeat="indefinite">
                     </a-animation>
                 </a-sphere>
                 
-                <!-- Glow effect ring -->
-                <a-ring 
-                    position="0 0.5 0" 
-                    radius-inner="0.35" 
-                    radius-outer="0.45" 
+                <!-- Outer glow ring 1 -->
+                <a-torus 
+                    position="0 1.5 0" 
+                    radius="1.5" 
+                    radius-tubular="0.05"
                     color="#a78bfa"
-                    opacity="0.6"
+                    opacity="0.7"
+                    rotation="-90 0 0">
+                    <a-animation
+                        attribute="scale"
+                        dur="2000"
+                        from="1 1 1"
+                        to="1.4 1.4 1.4"
+                        direction="alternate"
+                        repeat="indefinite"
+                        easing="ease-in-out">
+                    </a-animation>
+                    <a-animation
+                        attribute="opacity"
+                        dur="2000"
+                        from="0.7"
+                        to="0.2"
+                        direction="alternate"
+                        repeat="indefinite">
+                    </a-animation>
+                </a-torus>
+                
+                <!-- Outer glow ring 2 -->
+                <a-torus 
+                    position="0 1.5 0" 
+                    radius="2" 
+                    radius-tubular="0.05"
+                    color="#a78bfa"
+                    opacity="0.5"
                     rotation="-90 0 0">
                     <a-animation
                         attribute="scale"
@@ -190,76 +214,74 @@
                         from="1 1 1"
                         to="1.3 1.3 1.3"
                         direction="alternate"
-                        repeat="indefinite">
+                        repeat="indefinite"
+                        easing="ease-in-out"
+                        begin="500">
                     </a-animation>
                     <a-animation
                         attribute="opacity"
                         dur="2000"
-                        from="0.6"
-                        to="0.2"
+                        from="0.5"
+                        to="0.1"
                         direction="alternate"
-                        repeat="indefinite">
+                        repeat="indefinite"
+                        begin="500">
                     </a-animation>
-                </a-ring>
+                </a-torus>
                 
-                <!-- Particle Effects around seed -->
-                <a-sphere position="0.3 0.5 0" radius="0.05" color="#fbbf24" opacity="0.8" emissive="#fbbf24" emissiveIntensity="0.8">
-                    <a-animation attribute="position" dur="3000" to="0.3 1.0 0" direction="alternate" repeat="indefinite"></a-animation>
-                    <a-animation attribute="opacity" dur="3000" from="0.8" to="0.3" direction="alternate" repeat="indefinite"></a-animation>
+                <!-- Bright particles -->
+                <a-sphere position="1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
+                    <a-animation attribute="position" dur="3000" to="1 3 1" direction="alternate" repeat="indefinite"></a-animation>
                 </a-sphere>
-                <a-sphere position="-0.3 0.5 0" radius="0.05" color="#fbbf24" opacity="0.8" emissive="#fbbf24" emissiveIntensity="0.8">
-                    <a-animation attribute="position" dur="3000" to="-0.3 1.0 0" direction="alternate" repeat="indefinite" begin="500"></a-animation>
-                    <a-animation attribute="opacity" dur="3000" from="0.8" to="0.3" direction="alternate" repeat="indefinite" begin="500"></a-animation>
+                <a-sphere position="-1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
+                    <a-animation attribute="position" dur="3000" to="-1 3 1" direction="alternate" repeat="indefinite" begin="500"></a-animation>
                 </a-sphere>
-                <a-sphere position="0 0.5 0.3" radius="0.05" color="#fbbf24" opacity="0.8" emissive="#fbbf24" emissiveIntensity="0.8">
-                    <a-animation attribute="position" dur="3000" to="0 1.0 0.3" direction="alternate" repeat="indefinite" begin="1000"></a-animation>
-                    <a-animation attribute="opacity" dur="3000" from="0.8" to="0.3" direction="alternate" repeat="indefinite" begin="1000"></a-animation>
+                <a-sphere position="1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
+                    <a-animation attribute="position" dur="3000" to="1 3 -1" direction="alternate" repeat="indefinite" begin="1000"></a-animation>
                 </a-sphere>
-                <a-sphere position="0 0.5 -0.3" radius="0.05" color="#fbbf24" opacity="0.8" emissive="#fbbf24" emissiveIntensity="0.8">
-                    <a-animation attribute="position" dur="3000" to="0 1.0 -0.3" direction="alternate" repeat="indefinite" begin="1500"></a-animation>
-                    <a-animation attribute="opacity" dur="3000" from="0.8" to="0.3" direction="alternate" repeat="indefinite" begin="1500"></a-animation>
+                <a-sphere position="-1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
+                    <a-animation attribute="position" dur="3000" to="-1 3 -1" direction="alternate" repeat="indefinite" begin="1500"></a-animation>
                 </a-sphere>
                 
                 <!-- Text label -->
                 <a-text 
                     value="The Seed of Wonder" 
-                    position="0 1.2 0" 
+                    position="0 4 0" 
                     align="center" 
                     color="#ffffff"
-                    width="2">
+                    width="8"
+                    wrap-count="20">
                 </a-text>
             </a-entity>
         </a-marker>
 
-        <!-- Marker 2: The Sprout (Second Stage - Unlocked after Marker 1) -->
+        <!-- Marker 2: The Sprout -->
         <a-marker 
             id="marker2" 
             type="pattern" 
             url="markers/pattern-marker2.patt"
-            emitevents="true" 
-            cursor="rayOrigin: mouse"
-            smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.01"
-            smoothThreshold="2">
+            emitevents="true"
+            raycaster="objects: .clickable"
+            cursor="fuse: false; rayOrigin: mouse">
             
-            <a-entity id="sprout-group" visible="false" position="0 0 0" scale="0.5 0.5 0.5">
+            <a-entity id="sprout-group" visible="false" position="0 0 0" scale="0.25 0.25 0.25">
+                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
+                
                 <!-- Growing Plant -->
                 <a-cylinder 
                     id="stem"
-                    position="0 0.3 0" 
-                    radius="0.05" 
-                    height="0.6" 
+                    position="0 1 0" 
+                    radius="0.2" 
+                    height="2" 
                     color="#10b981"
                     class="clickable">
                 </a-cylinder>
                 
                 <a-cone 
-                    id="leaf1"
-                    position="0.15 0.5 0" 
-                    radius-bottom="0.15" 
-                    radius-top="0.01"
-                    height="0.3" 
+                    position="0.5 1.5 0" 
+                    radius-bottom="0.5" 
+                    radius-top="0.05"
+                    height="1" 
                     color="#34d399"
                     rotation="0 0 -60">
                     <a-animation
@@ -273,11 +295,10 @@
                 </a-cone>
                 
                 <a-cone 
-                    id="leaf2"
-                    position="-0.15 0.5 0" 
-                    radius-bottom="0.15" 
-                    radius-top="0.01"
-                    height="0.3" 
+                    position="-0.5 1.5 0" 
+                    radius-bottom="0.5" 
+                    radius-top="0.05"
+                    height="1" 
                     color="#34d399"
                     rotation="0 0 60">
                     <a-animation
@@ -290,53 +311,50 @@
                     </a-animation>
                 </a-cone>
                 
-                <!-- Sparkles -->
-                <a-sphere position="0 0.7 0" radius="0.03" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="2000" to="0.2 0.9 0" direction="alternate" repeat="indefinite"></a-animation>
+                <a-sphere position="0 2.5 0" radius="0.2" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
+                    <a-animation attribute="position" dur="2000" to="0.7 3.5 0" direction="alternate" repeat="indefinite"></a-animation>
                 </a-sphere>
                 
                 <a-text 
                     value="The Growing Sprout" 
-                    position="0 1.0 0" 
+                    position="0 3.5 0" 
                     align="center" 
                     color="#ffffff"
-                    width="2">
+                    width="8">
                 </a-text>
             </a-entity>
         </a-marker>
 
-        <!-- Marker 3: The Bloom (Final Stage - Interactive) -->
+        <!-- Marker 3: The Bloom -->
         <a-marker 
             id="marker3" 
             type="pattern" 
             url="markers/pattern-marker3.patt"
-            emitevents="true" 
-            cursor="rayOrigin: mouse"
-            smooth="true"
-            smoothCount="5"
-            smoothTolerance="0.01"
-            smoothThreshold="2">
+            emitevents="true"
+            raycaster="objects: .clickable"
+            cursor="fuse: false; rayOrigin: mouse">
             
-            <a-entity id="bloom-group" visible="false" position="0 0 0" scale="0.5 0.5 0.5">
-                <!-- Magical Flower -->
+            <a-entity id="bloom-group" visible="false" position="0 0 0" scale="0.25 0.25 0.25">
+                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
+                
                 <a-cylinder 
-                    position="0 0.3 0" 
-                    radius="0.05" 
-                    height="0.6" 
+                    position="0 1 0" 
+                    radius="0.2" 
+                    height="2" 
                     color="#10b981">
                 </a-cylinder>
                 
                 <!-- Flower petals -->
-                <a-entity id="flower" position="0 0.8 0" class="clickable">
-                    <a-sphere id="petal1" position="0.2 0 0" radius="0.15" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal2" position="-0.2 0 0" radius="0.15" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal3" position="0 0 0.2" radius="0.15" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal4" position="0 0 -0.2" radius="0.15" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal5" position="0.14 0 0.14" radius="0.15" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal6" position="-0.14 0 0.14" radius="0.15" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal7" position="0.14 0 -0.14" radius="0.15" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere id="petal8" position="-0.14 0 -0.14" radius="0.15" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.3"></a-sphere>
-                    <a-sphere position="0 0 0" radius="0.12" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="0.8"></a-sphere>
+                <a-entity id="flower" position="0 2.5 0" class="clickable">
+                    <a-sphere position="0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="-0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="0 0 0.7" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="0 0 -0.7" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="0.5 0 0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="-0.5 0 0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="-0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
+                    <a-sphere position="0 0 0" radius="0.4" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"></a-sphere>
                     
                     <a-animation
                         attribute="rotation"
@@ -347,16 +365,16 @@
                     </a-animation>
                 </a-entity>
                 
-                <!-- Butterfly (appears on interaction) -->
-                <a-entity id="butterfly" visible="false" position="0.5 1.2 0">
-                    <a-box width="0.2" height="0.05" depth="0.02" color="#fbbf24" position="-0.1 0 0"></a-box>
-                    <a-box width="0.2" height="0.05" depth="0.02" color="#fbbf24" position="0.1 0 0"></a-box>
-                    <a-sphere radius="0.05" color="#8b5cf6" position="0 0 0.02"></a-sphere>
+                <!-- Butterfly -->
+                <a-entity id="butterfly" visible="false" position="1.5 4 0">
+                    <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="-0.3 0 0"></a-box>
+                    <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="0.3 0 0"></a-box>
+                    <a-sphere radius="0.15" color="#8b5cf6" position="0 0 0.05"></a-sphere>
                     
                     <a-animation
                         attribute="position"
                         dur="4000"
-                        to="0.5 1.5 0.3"
+                        to="1.5 5 1"
                         direction="alternate"
                         repeat="indefinite"
                         easing="ease-in-out">
@@ -365,17 +383,17 @@
                 
                 <a-text 
                     value="The Magical Bloom" 
-                    position="0 1.5 0" 
+                    position="0 5 0" 
                     align="center" 
                     color="#ffffff"
-                    width="2">
+                    width="8">
                 </a-text>
             </a-entity>
         </a-marker>
     </a-scene>
 
     <script>
-        // Game State Management
+        // Game State
         const gameState = {
             marker1Found: false,
             marker2Found: false,
@@ -386,208 +404,147 @@
             currentStage: 0
         };
 
-        // Story stages
         const storyStages = [
-            {
-                title: "✨ The Magical Garden ✨",
-                text: "Point your camera at the first marker to begin your journey...",
-                progress: 0
-            },
-            {
-                title: "🌱 Discovery",
-                text: "You've found the Seed of Wonder! Tap it to plant it in the magical soil...",
-                progress: 33
-            },
-            {
-                title: "🌿 Growth",
-                text: "The seed is sprouting! Find the second marker to witness its growth...",
-                progress: 50
-            },
-            {
-                title: "🌸 Transformation",
-                text: "The sprout is reaching for the sky! Tap it to give it energy...",
-                progress: 66
-            },
-            {
-                title: "🦋 Bloom",
-                text: "Find the final marker to see the magnificent bloom...",
-                progress: 83
-            },
-            {
-                title: "✨ Magic Revealed",
-                text: "The flower has bloomed! Tap it to reveal its magical secret...",
-                progress: 100
-            },
-            {
-                title: "🎉 Journey Complete",
-                text: "A butterfly emerges! You've brought magic to the garden. The cycle of wonder continues...",
-                progress: 100
-            }
+            { title: "✨ The Magical Garden ✨", text: "Point your camera at the first marker to begin...", progress: 0 },
+            { title: "🌱 Discovery", text: "You found the Seed! Tap it to plant it...", progress: 33 },
+            { title: "🌿 Growth", text: "The seed is sprouting! Find the second marker...", progress: 50 },
+            { title: "🌸 Transformation", text: "The sprout grows! Tap it to give energy...", progress: 66 },
+            { title: "🦋 Bloom", text: "Find the final marker to see the bloom...", progress: 83 },
+            { title: "✨ Magic Revealed", text: "The flower bloomed! Tap it to reveal magic...", progress: 100 },
+            { title: "🎉 Complete", text: "A butterfly emerges! The cycle of wonder continues...", progress: 100 }
         ];
 
-        function updateStory(stageIndex) {
-            if (stageIndex >= storyStages.length) return;
-            
-            const stage = storyStages[stageIndex];
+        function updateStory(index) {
+            if (index >= storyStages.length) return;
+            const stage = storyStages[index];
             document.getElementById('story-title').textContent = stage.title;
             document.getElementById('story-text').textContent = stage.text;
             document.getElementById('progress-fill').style.width = stage.progress + '%';
-            gameState.currentStage = stageIndex;
+            gameState.currentStage = index;
         }
 
-        function showInteractionHint() {
+        function showHint() {
             const hint = document.getElementById('interaction-hint');
             hint.style.display = 'block';
-            setTimeout(() => {
-                hint.style.display = 'none';
-            }, 5000);
+            setTimeout(() => hint.style.display = 'none', 4000);
         }
 
-        function updateDebug(message) {
-            document.getElementById('debug-info').textContent = message;
+        function log(msg) {
+            const debug = document.getElementById('debug-info');
+            const time = new Date().toLocaleTimeString();
+            debug.innerHTML = `[${time}] ${msg}<br>` + debug.innerHTML;
         }
 
-        // Marker 1 Events
+        // Scene ready
+        const scene = document.querySelector('a-scene');
+        scene.addEventListener('loaded', () => {
+            log('✓ AR Scene loaded successfully');
+            log('Camera ready. Point at marker 1');
+        });
+
+        // Marker 1
         const marker1 = document.getElementById('marker1');
         marker1.addEventListener('markerFound', () => {
-            updateDebug('Marker 1 found! ✓');
+            log('✓✓✓ MARKER 1 DETECTED! Seed should be visible!');
             if (!gameState.marker1Found) {
                 gameState.marker1Found = true;
                 updateStory(1);
-                showInteractionHint();
+                showHint();
             }
         });
-
         marker1.addEventListener('markerLost', () => {
-            updateDebug('Marker 1 lost - keep marker in view');
+            log('Marker 1 lost - reposition camera');
         });
 
-        // Seed Click Event
-        document.getElementById('seed').addEventListener('click', () => {
-            updateDebug('Seed clicked!');
+        // Seed click
+        const seed = document.getElementById('seed');
+        seed.addEventListener('click', function() {
+            log('✓ Seed clicked!');
             if (gameState.marker1Found && !gameState.seedClicked) {
                 gameState.seedClicked = true;
                 updateStory(2);
-                
-                // Animate seed planting
-                const seedGroup = document.getElementById('seed-group');
-                seedGroup.setAttribute('animation', {
-                    property: 'scale',
-                    to: '0.3 0.3 0.3',
-                    dur: 1000,
-                    easing: 'ease-in'
-                });
+                this.parentElement.setAttribute('animation', 'property: scale; to: 0.08 0.08 0.08; dur: 1000');
             }
         });
 
-        // Marker 2 Events
+        // Marker 2
         const marker2 = document.getElementById('marker2');
         marker2.addEventListener('markerFound', () => {
             if (gameState.seedClicked && !gameState.marker2Found) {
-                updateDebug('Marker 2 found! ✓');
+                log('✓✓✓ MARKER 2 DETECTED! Sprout visible!');
                 gameState.marker2Found = true;
                 document.getElementById('sprout-group').setAttribute('visible', true);
                 updateStory(3);
-                showInteractionHint();
+                showHint();
             } else if (!gameState.seedClicked) {
-                updateDebug('Complete Marker 1 first!');
-                document.getElementById('story-text').textContent = "You must find and interact with the first marker before this one awakens...";
+                log('⚠ Complete Marker 1 first!');
             }
         });
 
-        marker2.addEventListener('markerLost', () => {
-            if (gameState.marker2Found) {
-                updateDebug('Marker 2 lost - keep marker in view');
-            }
-        });
-
-        // Sprout Click Event
-        document.getElementById('stem').addEventListener('click', () => {
-            updateDebug('Sprout clicked!');
+        // Stem click
+        const stem = document.getElementById('stem');
+        stem.addEventListener('click', function() {
+            log('✓ Stem clicked!');
             if (gameState.marker2Found && !gameState.sproutClicked) {
                 gameState.sproutClicked = true;
                 updateStory(4);
-                
-                // Animate growth
-                const sproutGroup = document.getElementById('sprout-group');
-                sproutGroup.setAttribute('animation', {
-                    property: 'scale',
-                    to: '0.7 0.7 0.7',
-                    dur: 2000,
-                    easing: 'ease-out'
-                });
+                this.parentElement.setAttribute('animation', 'property: scale; to: 0.22 0.22 0.22; dur: 2000');
             }
         });
 
-        // Marker 3 Events
+        // Marker 3
         const marker3 = document.getElementById('marker3');
         marker3.addEventListener('markerFound', () => {
             if (gameState.sproutClicked && !gameState.marker3Found) {
-                updateDebug('Marker 3 found! ✓');
+                log('✓✓✓ MARKER 3 DETECTED! Flower visible!');
                 gameState.marker3Found = true;
                 document.getElementById('bloom-group').setAttribute('visible', true);
                 updateStory(5);
-                showInteractionHint();
+                showHint();
             } else if (!gameState.sproutClicked) {
-                updateDebug('Complete Marker 2 first!');
-                document.getElementById('story-text').textContent = "The final marker awaits, but you must complete the earlier stages first...";
+                log('⚠ Complete Marker 2 first!');
             }
         });
 
-        marker3.addEventListener('markerLost', () => {
-            if (gameState.marker3Found) {
-                updateDebug('Marker 3 lost - keep marker in view');
-            }
-        });
-
-        // Flower Click Event
-        document.getElementById('flower').addEventListener('click', () => {
-            updateDebug('Flower clicked! 🦋');
+        // Flower click
+        const flower = document.getElementById('flower');
+        flower.addEventListener('click', function() {
+            log('✓ Flower clicked! Butterfly appears!');
             if (gameState.marker3Found && !gameState.flowerClicked) {
                 gameState.flowerClicked = true;
                 updateStory(6);
-                
-                // Reveal butterfly
-                const butterfly = document.getElementById('butterfly');
-                butterfly.setAttribute('visible', true);
-                
-                // Flower opening animation
-                const bloomGroup = document.getElementById('bloom-group');
-                bloomGroup.setAttribute('animation', {
-                    property: 'scale',
-                    to: '0.8 0.8 0.8',
-                    dur: 2000,
-                    easing: 'ease-out'
-                });
+                document.getElementById('butterfly').setAttribute('visible', true);
+                this.parentElement.setAttribute('animation', 'property: scale; to: 0.25 0.25 0.25; dur: 2000');
             }
         });
 
-        // Touch/click handling for mobile
+        // Mobile touch handling
+        let touchStartTime = 0;
         document.addEventListener('touchstart', (e) => {
-            // Get touch coordinates
-            const touch = e.touches[0];
-            const x = touch.clientX;
-            const y = touch.clientY;
-            
-            // Create a synthetic click event
-            const clickEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                view: window,
-                clientX: x,
-                clientY: y
-            });
-            
-            // Dispatch to the touched element
-            const element = document.elementFromPoint(x, y);
-            if (element) {
-                element.dispatchEvent(clickEvent);
+            touchStartTime = Date.now();
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration < 300) { // Quick tap
+                const touch = e.changedTouches[0];
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                document.elementFromPoint(touch.clientX, touch.clientY)?.dispatchEvent(clickEvent);
             }
         });
 
-        // Scene loaded
-        document.querySelector('a-scene').addEventListener('loaded', () => {
-            updateDebug('AR Ready! Point at marker 1');
+        // Error handling
+        window.addEventListener('error', (e) => {
+            log('ERROR: ' + e.message);
+        });
+
+        scene.addEventListener('arjs-video-loaded', () => {
+            log('✓ Camera stream active');
         });
     </script>
 </body>
