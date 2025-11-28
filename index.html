@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive AR Narrative Experience</title>
+    <title>The Magical Garden - AR Experience</title>
     <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
-    
     <style>
         body {
             margin: 0;
             overflow: hidden;
+            font-family: 'Arial', sans-serif;
         }
         
         #ui-overlay {
@@ -18,356 +18,452 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-family: Arial, sans-serif;
+            z-index: 999;
             text-align: center;
-            max-width: 80%;
+            pointer-events: none;
+        }
+        
+        #story-panel {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 20px 30px;
+            border-radius: 15px;
+            max-width: 80vw;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(147, 51, 234, 0.5);
+        }
+        
+        #story-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #a78bfa;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
         }
         
         #story-text {
             font-size: 16px;
-            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #e0e7ff;
         }
         
-        #progress {
+        #progress-bar {
+            margin-top: 15px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+        }
+        
+        .interaction-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(167, 139, 250, 0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
             font-size: 14px;
-            color: #4CAF50;
+            pointer-events: all;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+            z-index: 998;
+            display: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
         }
         
         .fade-in {
-            animation: fadeIn 1s;
+            animation: fadeIn 1s ease-in;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
     </style>
 </head>
 <body>
+    <!-- UI Overlay -->
     <div id="ui-overlay">
-        <div id="story-text">Point your camera at the first marker to begin the journey...</div>
-        <div id="progress">Progress: 0/3</div>
+        <div id="story-panel" class="fade-in">
+            <div id="story-title">✨ The Magical Garden ✨</div>
+            <div id="story-text">Point your camera at the first marker to begin your journey...</div>
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+        </div>
     </div>
+    
+    <div id="interaction-hint" class="interaction-hint">👆 Tap the object to interact!</div>
 
+    <!-- AR Scene -->
     <a-scene
         vr-mode-ui="enabled: false"
         renderer="logarithmicDepthBuffer: true; precision: medium;"
         embedded
         arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
         
-        <!-- First Marker: The Beginning -->
-        <a-nft
-            id="marker1"
-            type="nft"
-            url="markers/marker1"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5">
-            
-            <!-- Animated Text Panel -->
-            <a-entity
-                id="panel1"
-                position="0 0 0"
-                rotation="-90 0 0"
-                scale="50 50 50">
-                
-                <a-plane
-                    width="4"
-                    height="2"
-                    color="#1a1a2e"
-                    opacity="0.9">
-                </a-plane>
-                
-                <a-text
-                    value="Chapter I: The Discovery"
-                    align="center"
-                    color="#00d4ff"
-                    width="3.5"
-                    position="0 0.5 0.01"
-                    font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
-                </a-text>
-                
-                <a-text
-                    value="A mysterious artifact awakens..."
-                    align="center"
-                    color="#ffffff"
-                    width="3"
-                    position="0 0 0.01">
-                </a-text>
-                
-                <!-- Rotating Crystal -->
-                <a-octahedron
-                    position="0 -0.5 0.5"
-                    radius="0.3"
-                    color="#4CAF50"
-                    metalness="0.8"
+        <!-- Camera -->
+        <a-entity camera></a-entity>
+
+        <!-- Marker 1: The Seed (Starting Point) -->
+        <a-marker id="marker1" type="pattern" preset="custom" url="markers/pattern-marker1.patt" 
+                  emitevents="true" cursor="rayOrigin: mouse">
+            <a-entity id="seed-group">
+                <!-- Magical Seed -->
+                <a-sphere 
+                    id="seed"
+                    position="0 0.5 0" 
+                    radius="0.3" 
+                    color="#8b5cf6"
+                    metalness="0.7"
                     roughness="0.2"
-                    animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
-                    animation__scale="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000">
-                </a-octahedron>
-            </a-entity>
-        </a-nft>
-        
-        <!-- Second Marker: The Journey (appears after first) -->
-        <a-nft
-            id="marker2"
-            type="nft"
-            url="markers/marker2"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5">
-            
-            <a-entity
-                id="panel2"
-                position="0 0 0"
-                rotation="-90 0 0"
-                scale="50 50 50"
-                visible="false">
-                
-                <a-plane
-                    width="4"
-                    height="2"
-                    color="#2e1a47"
-                    opacity="0.9">
-                </a-plane>
-                
-                <a-text
-                    value="Chapter II: The Portal"
-                    align="center"
-                    color="#ff6b6b"
-                    width="3.5"
-                    position="0 0.5 0.01"
-                    font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
-                </a-text>
-                
-                <a-text
-                    value="Click to open the gateway"
-                    align="center"
-                    color="#ffffff"
-                    width="3"
-                    position="0 0 0.01">
-                </a-text>
-                
-                <!-- Interactive Sphere Portal -->
-                <a-sphere
-                    id="portal"
-                    position="0 -0.5 0.5"
-                    radius="0.4"
-                    color="#ff6b6b"
-                    opacity="0.7"
-                    animation="property: rotation; to: 0 360 0; loop: true; dur: 2000"
-                    animation__pulse="property: scale; to: 1.3 1.3 1.3; dir: alternate; loop: true; dur: 800"
                     class="clickable">
-                    
-                    <a-torus
-                        position="0 0 0"
-                        radius="0.5"
-                        radius-tubular="0.05"
-                        color="#ffd93d"
-                        animation="property: rotation; to: 360 0 0; loop: true; dur: 2000">
-                    </a-torus>
+                    <a-animation
+                        attribute="rotation"
+                        dur="4000"
+                        to="0 360 0"
+                        easing="linear"
+                        repeat="indefinite">
+                    </a-animation>
+                    <a-animation
+                        attribute="position"
+                        dur="2000"
+                        direction="alternate"
+                        to="0 0.7 0"
+                        easing="ease-in-out"
+                        repeat="indefinite">
+                    </a-animation>
                 </a-sphere>
-            </a-entity>
-        </a-nft>
-        
-        <!-- Third Marker: The Finale -->
-        <a-nft
-            id="marker3"
-            type="nft"
-            url="markers/marker3"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5">
-            
-            <a-entity
-                id="panel3"
-                position="0 0 0"
-                rotation="-90 0 0"
-                scale="50 50 50"
-                visible="false">
                 
-                <a-plane
-                    width="4"
-                    height="2.5"
-                    color="#0f3460"
-                    opacity="0.9">
-                </a-plane>
+                <!-- Particle Effects around seed -->
+                <a-sphere position="0.3 0.5 0" radius="0.05" color="#fbbf24" opacity="0.8">
+                    <a-animation attribute="position" dur="3000" to="0.3 1.0 0" direction="alternate" repeat="indefinite"></a-animation>
+                </a-sphere>
+                <a-sphere position="-0.3 0.5 0" radius="0.05" color="#fbbf24" opacity="0.8">
+                    <a-animation attribute="position" dur="3000" to="-0.3 1.0 0" direction="alternate" repeat="indefinite" begin="500"></a-animation>
+                </a-sphere>
                 
-                <a-text
-                    value="Chapter III: Revelation"
-                    align="center"
-                    color="#6BCB77"
-                    width="3.5"
-                    position="0 0.8 0.01"
-                    font="https://cdn.aframe.io/fonts/Exo2Bold.fnt">
-                </a-text>
-                
-                <a-text
-                    value="The truth is revealed..."
-                    align="center"
+                <!-- Text label -->
+                <a-text 
+                    value="The Seed of Wonder" 
+                    position="0 1.2 0" 
+                    align="center" 
                     color="#ffffff"
-                    width="3"
-                    position="0 0.3 0.01">
+                    width="2"
+                    shader="msdf"
+                    font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/berkshireswash/BerkshireSwash-Regular.json">
                 </a-text>
+            </a-entity>
+        </a-marker>
+
+        <!-- Marker 2: The Sprout (Second Stage - Unlocked after Marker 1) -->
+        <a-marker id="marker2" type="pattern" preset="custom" url="markers/pattern-marker2.patt"
+                  emitevents="true" cursor="rayOrigin: mouse">
+            <a-entity id="sprout-group" visible="false">
+                <!-- Growing Plant -->
+                <a-cylinder 
+                    id="stem"
+                    position="0 0.3 0" 
+                    radius="0.05" 
+                    height="0.6" 
+                    color="#10b981">
+                </a-cylinder>
                 
-                <!-- Multiple Interactive Elements -->
-                <a-entity position="0 -0.5 0.5">
-                    <a-box
-                        position="-0.6 0 0"
-                        width="0.3"
-                        height="0.3"
-                        depth="0.3"
-                        color="#4ECDC4"
-                        animation="property: rotation; to: 360 360 0; loop: true; dur: 4000"
-                        animation__hover="property: position; to: -0.6 0.3 0; startEvents: mouseenter; pauseEvents: mouseleave"
-                        class="clickable">
-                    </a-box>
+                <a-cone 
+                    id="leaf1"
+                    position="0.15 0.5 0" 
+                    radius-bottom="0.15" 
+                    radius-top="0.01"
+                    height="0.3" 
+                    color="#34d399"
+                    rotation="0 0 -60">
+                    <a-animation
+                        attribute="rotation"
+                        dur="3000"
+                        to="0 0 -50"
+                        direction="alternate"
+                        repeat="indefinite"
+                        easing="ease-in-out">
+                    </a-animation>
+                </a-cone>
+                
+                <a-cone 
+                    id="leaf2"
+                    position="-0.15 0.5 0" 
+                    radius-bottom="0.15" 
+                    radius-top="0.01"
+                    height="0.3" 
+                    color="#34d399"
+                    rotation="0 0 60">
+                    <a-animation
+                        attribute="rotation"
+                        dur="3000"
+                        to="0 0 50"
+                        direction="alternate"
+                        repeat="indefinite"
+                        easing="ease-in-out">
+                    </a-animation>
+                </a-cone>
+                
+                <a-text 
+                    value="The Growing Sprout" 
+                    position="0 1.0 0" 
+                    align="center" 
+                    color="#ffffff"
+                    width="2"
+                    shader="msdf"
+                    font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/berkshireswash/BerkshireSwash-Regular.json">
+                </a-text>
+            </a-entity>
+        </a-marker>
+
+        <!-- Marker 3: The Bloom (Final Stage - Interactive) -->
+        <a-marker id="marker3" type="pattern" preset="custom" url="markers/pattern-marker3.patt"
+                  emitevents="true" cursor="rayOrigin: mouse">
+            <a-entity id="bloom-group" visible="false">
+                <!-- Magical Flower -->
+                <a-cylinder 
+                    position="0 0.3 0" 
+                    radius="0.05" 
+                    height="0.6" 
+                    color="#10b981">
+                </a-cylinder>
+                
+                <!-- Flower petals -->
+                <a-entity id="flower" position="0 0.8 0">
+                    <a-sphere id="petal1" position="0.2 0 0" radius="0.15" color="#ec4899"></a-sphere>
+                    <a-sphere id="petal2" position="-0.2 0 0" radius="0.15" color="#ec4899"></a-sphere>
+                    <a-sphere id="petal3" position="0 0 0.2" radius="0.15" color="#ec4899"></a-sphere>
+                    <a-sphere id="petal4" position="0 0 -0.2" radius="0.15" color="#ec4899"></a-sphere>
+                    <a-sphere id="petal5" position="0.14 0 0.14" radius="0.15" color="#f472b6"></a-sphere>
+                    <a-sphere id="petal6" position="-0.14 0 0.14" radius="0.15" color="#f472b6"></a-sphere>
+                    <a-sphere id="petal7" position="0.14 0 -0.14" radius="0.15" color="#f472b6"></a-sphere>
+                    <a-sphere id="petal8" position="-0.14 0 -0.14" radius="0.15" color="#f472b6"></a-sphere>
+                    <a-sphere position="0 0 0" radius="0.12" color="#fbbf24"></a-sphere>
                     
-                    <a-cylinder
-                        position="0 0 0"
-                        radius="0.15"
-                        height="0.5"
-                        color="#FFE66D"
-                        animation="property: rotation; to: 0 360 0; loop: true; dur: 3000"
-                        animation__bounce="property: position; to: 0 0.3 0; dir: alternate; loop: true; dur: 1000"
-                        class="clickable">
-                    </a-cylinder>
-                    
-                    <a-cone
-                        position="0.6 0 0"
-                        radius-bottom="0.2"
-                        radius-top="0"
-                        height="0.4"
-                        color="#FF6B9D"
-                        animation="property: rotation; to: 0 0 360; loop: true; dur: 2000"
-                        animation__hover="property: scale; to: 1.5 1.5 1.5; startEvents: mouseenter; pauseEvents: mouseleave"
-                        class="clickable">
-                    </a-cone>
+                    <a-animation
+                        attribute="rotation"
+                        dur="6000"
+                        to="0 360 0"
+                        easing="linear"
+                        repeat="indefinite">
+                    </a-animation>
                 </a-entity>
                 
-                <a-text
-                    value="Thank you for experiencing this journey!"
-                    align="center"
+                <!-- Butterfly (appears on interaction) -->
+                <a-entity id="butterfly" visible="false" position="0.5 1.2 0">
+                    <a-box width="0.2" height="0.05" depth="0.02" color="#fbbf24" position="-0.1 0 0"></a-box>
+                    <a-box width="0.2" height="0.05" depth="0.02" color="#fbbf24" position="0.1 0 0"></a-box>
+                    <a-sphere radius="0.05" color="#8b5cf6" position="0 0 0.02"></a-sphere>
+                    
+                    <a-animation
+                        attribute="position"
+                        dur="4000"
+                        to="0.5 1.5 0.3"
+                        direction="alternate"
+                        repeat="indefinite"
+                        easing="ease-in-out">
+                    </a-animation>
+                </a-entity>
+                
+                <a-text 
+                    value="The Magical Bloom" 
+                    position="0 1.5 0" 
+                    align="center" 
                     color="#ffffff"
-                    width="3"
-                    position="0 -1.2 0.01"
-                    opacity="0"
-                    animation__appear="property: opacity; to: 1; delay: 2000; dur: 2000">
+                    width="2"
+                    shader="msdf"
+                    font="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/berkshireswash/BerkshireSwash-Regular.json">
                 </a-text>
             </a-entity>
-        </a-nft>
-        
-        <a-entity camera></a-entity>
+        </a-marker>
     </a-scene>
 
     <script>
-        // State management
-        const state = {
+        // Game State Management
+        const gameState = {
             marker1Found: false,
             marker2Found: false,
             marker3Found: false,
-            portalActivated: false,
-            progress: 0
+            seedClicked: false,
+            sproutClicked: false,
+            flowerClicked: false,
+            currentStage: 0
         };
 
-        const stories = [
-            "Point your camera at the first marker to begin the journey...",
-            "The artifact has awakened! Find the second marker to continue...",
-            "The portal is ready! Click it to activate, then find the final marker...",
-            "Journey complete! You've unlocked all secrets!"
+        // Story stages
+        const storyStages = [
+            {
+                title: "✨ The Magical Garden ✨",
+                text: "Point your camera at the first marker to begin your journey...",
+                progress: 0
+            },
+            {
+                title: "🌱 Discovery",
+                text: "You've found the Seed of Wonder! Tap it to plant it in the magical soil...",
+                progress: 33
+            },
+            {
+                title: "🌿 Growth",
+                text: "The seed is sprouting! Find the second marker to witness its growth...",
+                progress: 50
+            },
+            {
+                title: "🌸 Transformation",
+                text: "The sprout is reaching for the sky! Tap it to give it energy...",
+                progress: 66
+            },
+            {
+                title: "🦋 Bloom",
+                text: "Find the final marker to see the magnificent bloom...",
+                progress: 83
+            },
+            {
+                title: "✨ Magic Revealed",
+                text: "The flower has bloomed! Tap it to reveal its magical secret...",
+                progress: 100
+            },
+            {
+                title: "🎉 Journey Complete",
+                text: "A butterfly emerges! You've brought magic to the garden. The cycle of wonder continues...",
+                progress: 100
+            }
         ];
 
-        function updateUI() {
-            document.getElementById('story-text').textContent = stories[state.progress];
-            document.getElementById('progress').textContent = `Progress: ${state.progress}/3`;
-            document.getElementById('story-text').classList.add('fade-in');
-            setTimeout(() => {
-                document.getElementById('story-text').classList.remove('fade-in');
-            }, 1000);
+        function updateStory(stageIndex) {
+            if (stageIndex >= storyStages.length) return;
+            
+            const stage = storyStages[stageIndex];
+            document.getElementById('story-title').textContent = stage.title;
+            document.getElementById('story-text').textContent = stage.text;
+            document.getElementById('progress-fill').style.width = stage.progress + '%';
+            gameState.currentStage = stageIndex;
         }
 
-        // Marker event listeners
-        const marker1 = document.getElementById('marker1');
-        const marker2 = document.getElementById('marker2');
-        const marker3 = document.getElementById('marker3');
-        const panel2 = document.getElementById('panel2');
-        const panel3 = document.getElementById('panel3');
-
-        marker1.addEventListener('markerFound', function() {
-            if (!state.marker1Found) {
-                state.marker1Found = true;
-                state.progress = 1;
-                updateUI();
-                
-                // Enable second marker after 2 seconds
-                setTimeout(() => {
-                    panel2.setAttribute('visible', 'true');
-                }, 2000);
-            }
-        });
-
-        marker2.addEventListener('markerFound', function() {
-            if (state.marker1Found && !state.marker2Found) {
-                state.marker2Found = true;
-                state.progress = 2;
-                updateUI();
-            }
-        });
-
-        marker3.addEventListener('markerFound', function() {
-            if (state.portalActivated && !state.marker3Found) {
-                state.marker3Found = true;
-                state.progress = 3;
-                updateUI();
-            }
-        });
-
-        // Portal interaction
-        document.addEventListener('DOMContentLoaded', function() {
+        function showInteractionHint() {
+            const hint = document.getElementById('interaction-hint');
+            hint.style.display = 'block';
             setTimeout(() => {
-                const portal = document.getElementById('portal');
-                if (portal) {
-                    portal.addEventListener('click', function() {
-                        if (state.marker2Found && !state.portalActivated) {
-                            state.portalActivated = true;
-                            
-                            // Visual feedback
-                            this.setAttribute('animation__activate', {
-                                property: 'scale',
-                                to: '2 2 2',
-                                dur: 500
-                            });
-                            
-                            setTimeout(() => {
-                                panel3.setAttribute('visible', 'true');
-                                updateUI();
-                            }, 500);
-                        }
-                    });
-                }
+                hint.style.display = 'none';
+            }, 5000);
+        }
 
-                // Add click interactions to final scene objects
-                const clickables = document.querySelectorAll('.clickable');
-                clickables.forEach(el => {
-                    el.addEventListener('click', function() {
-                        // Random color change on click
-                        const colors = ['#4ECDC4', '#FFE66D', '#FF6B9D', '#95E1D3', '#F38181'];
-                        this.setAttribute('color', colors[Math.floor(Math.random() * colors.length)]);
-                    });
-                });
-            }, 2000);
+        // Marker 1 Events
+        const marker1 = document.getElementById('marker1');
+        marker1.addEventListener('markerFound', () => {
+            if (!gameState.marker1Found) {
+                gameState.marker1Found = true;
+                updateStory(1);
+                showInteractionHint();
+            }
         });
 
-        // Initialize
-        updateUI();
+        // Seed Click Event
+        document.getElementById('seed').addEventListener('click', () => {
+            if (gameState.marker1Found && !gameState.seedClicked) {
+                gameState.seedClicked = true;
+                updateStory(2);
+                
+                // Animate seed planting
+                const seed = document.getElementById('seed');
+                seed.setAttribute('animation', {
+                    property: 'scale',
+                    to: '0.5 0.5 0.5',
+                    dur: 1000,
+                    easing: 'ease-in'
+                });
+            }
+        });
+
+        // Marker 2 Events
+        const marker2 = document.getElementById('marker2');
+        marker2.addEventListener('markerFound', () => {
+            if (gameState.seedClicked && !gameState.marker2Found) {
+                gameState.marker2Found = true;
+                document.getElementById('sprout-group').setAttribute('visible', true);
+                updateStory(3);
+                showInteractionHint();
+            } else if (!gameState.seedClicked) {
+                // Show hint that marker 1 needs to be completed first
+                document.getElementById('story-text').textContent = "You must find and interact with the first marker before this one awakens...";
+            }
+        });
+
+        // Sprout Click Event
+        document.getElementById('stem').addEventListener('click', () => {
+            if (gameState.marker2Found && !gameState.sproutClicked) {
+                gameState.sproutClicked = true;
+                updateStory(4);
+                
+                // Animate growth
+                const stem = document.getElementById('stem');
+                stem.setAttribute('animation', {
+                    property: 'height',
+                    to: '1.0',
+                    dur: 2000,
+                    easing: 'ease-out'
+                });
+            }
+        });
+
+        // Marker 3 Events
+        const marker3 = document.getElementById('marker3');
+        marker3.addEventListener('markerFound', () => {
+            if (gameState.sproutClicked && !gameState.marker3Found) {
+                gameState.marker3Found = true;
+                document.getElementById('bloom-group').setAttribute('visible', true);
+                updateStory(5);
+                showInteractionHint();
+            } else if (!gameState.sproutClicked) {
+                document.getElementById('story-text').textContent = "The final marker awaits, but you must complete the earlier stages first...";
+            }
+        });
+
+        // Flower Click Event
+        document.getElementById('flower').addEventListener('click', () => {
+            if (gameState.marker3Found && !gameState.flowerClicked) {
+                gameState.flowerClicked = true;
+                updateStory(6);
+                
+                // Reveal butterfly
+                const butterfly = document.getElementById('butterfly');
+                butterfly.setAttribute('visible', true);
+                
+                // Flower opening animation
+                const flower = document.getElementById('flower');
+                flower.setAttribute('animation', {
+                    property: 'scale',
+                    to: '1.5 1.5 1.5',
+                    dur: 2000,
+                    easing: 'ease-out'
+                });
+            }
+        });
+
+        // Mouse cursor for clickable elements
+        document.querySelectorAll('.clickable, #seed, #stem, #flower').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                document.body.style.cursor = 'pointer';
+            });
+            el.addEventListener('mouseleave', () => {
+                document.body.style.cursor = 'default';
+            });
+        });
     </script>
 </body>
 </html>
