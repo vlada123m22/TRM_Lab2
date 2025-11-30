@@ -1,482 +1,595 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Magical Garden - AR Experience</title>
+  <meta charset="utf-8" />
+  <title>AR Story: The Time Traveler's Journey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <!-- AR.js for A-Frame (NFT marker-based AR) -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar-nft.js"></script>
+
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
     
-    <!-- Preconnect to CDNs for faster loading -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://raw.githack.com">
+    .story-overlay {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 20px 30px;
+      border-radius: 15px;
+      max-width: 80%;
+      text-align: center;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
     
-    <!-- Load scripts with async/defer for non-blocking -->
-    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    .story-overlay h2 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      background: linear-gradient(90deg, #4CC3D9, #FFC65D);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
     
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
+    .story-overlay p {
+      margin: 5px 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    
+    .progress-bar {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 400px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      z-index: 100;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CC3D9, #FFC65D, #7BC8A4);
+      width: 0%;
+      transition: width 0.5s ease;
+      border-radius: 10px;
+    }
+    
+    .hud {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(3, auto);
+      gap: 12px;
+      z-index: 100;
+      pointer-events: none;
+    }
+    
+    .hud button {
+      pointer-events: auto;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .hud button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hud button:active {
+      transform: translateY(0);
+    }
+    
+    .instruction {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      z-index: 150;
+      max-width: 80%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+    
+    .instruction h1 {
+      margin: 0 0 20px 0;
+      font-size: 28px;
+      color: #4CC3D9;
+    }
+    
+    .instruction p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    
+    .hidden { display: none !important; }
+  </style>
+
+  <script>
+  // Story state management
+  const storyState = {
+    marker1Scanned: false,
+    marker2Scanned: false,
+    marker3Scanned: false,
+    currentChapter: 0,
+    totalChapters: 3
+  };
+
+  const storyTexts = {
+    0: {
+      title: "The Journey Begins",
+      text: "Scan Marker 1 to discover the Ancient Portal..."
+    },
+    1: {
+      title: "Chapter 1: The Ancient Portal",
+      text: "You've discovered a mysterious portal! Now find Marker 2 to continue your journey through time..."
+    },
+    2: {
+      title: "Chapter 2: The Crystal of Time",
+      text: "The crystal pulses with energy! Seek Marker 3 to unlock the final secret..."
+    },
+    3: {
+      title: "Chapter 3: The Guardian's Gift",
+      text: "You've completed your journey! The Time Traveler's treasure is revealed. Interact with all objects to explore!"
+    }
+  };
+
+  // Update story UI
+  function updateStory() {
+    const overlay = document.getElementById('story-overlay');
+    const title = document.getElementById('story-title');
+    const text = document.getElementById('story-text');
+    const progress = document.getElementById('progress-fill');
+    
+    const story = storyTexts[storyState.currentChapter];
+    title.textContent = story.title;
+    text.textContent = story.text;
+    
+    const progressPercent = (storyState.currentChapter / storyState.totalChapters) * 100;
+    progress.style.width = progressPercent + '%';
+    
+    // Hide instruction after first scan
+    if (storyState.currentChapter > 0) {
+      document.getElementById('instruction').classList.add('hidden');
+    }
+  }
+
+  // Marker visibility components
+  AFRAME.registerComponent('marker-handler', {
+    schema: {
+      markerNum: {type: 'number', default: 1}
+    },
+    
+    init() {
+      this.el.addEventListener('markerFound', () => {
+        console.log(`Marker ${this.data.markerNum} found`);
         
-        #ui-overlay {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            text-align: center;
-            pointer-events: none;
-            max-width: 90vw;
+        // Check progression rules
+        if (this.data.markerNum === 1) {
+          storyState.marker1Scanned = true;
+          if (storyState.currentChapter === 0) {
+            storyState.currentChapter = 1;
+            updateStory();
+          }
+        } else if (this.data.markerNum === 2) {
+          if (storyState.marker1Scanned) {
+            storyState.marker2Scanned = true;
+            if (storyState.currentChapter === 1) {
+              storyState.currentChapter = 2;
+              updateStory();
+            }
+          } else {
+            // Hide marker2 content if marker1 not scanned yet
+            this.el.setAttribute('visible', false);
+          }
+        } else if (this.data.markerNum === 3) {
+          if (storyState.marker1Scanned && storyState.marker2Scanned) {
+            storyState.marker3Scanned = true;
+            if (storyState.currentChapter === 2) {
+              storyState.currentChapter = 3;
+              updateStory();
+            }
+          } else {
+            // Hide marker3 content if previous markers not scanned
+            this.el.setAttribute('visible', false);
+          }
         }
-        
-        #story-panel {
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 15px 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(147, 51, 234, 0.5);
+      });
+      
+      this.el.addEventListener('markerLost', () => {
+        console.log(`Marker ${this.data.markerNum} lost`);
+      });
+    }
+  });
+
+  // Interactive object component
+  AFRAME.registerComponent('interactive-object', {
+    schema: {
+      type: {type: 'string', default: 'spin'}
+    },
+    
+    init() {
+      this.spinning = false;
+      
+      // Click/tap interaction
+      this.el.addEventListener('click', () => {
+        if (this.data.type === 'spin') {
+          this.spinning = !this.spinning;
+          if (this.spinning) {
+            this.el.setAttribute('animation', 
+              'property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear');
+          } else {
+            this.el.removeAttribute('animation');
+          }
+        } else if (this.data.type === 'color') {
+          const colors = ['#4CC3D9', '#FFC65D', '#7BC8A4', '#EF2D5E', '#FF6B6B', '#4ECDC4'];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          this.el.setAttribute('material', 'color', randomColor);
+        } else if (this.data.type === 'scale') {
+          const currentScale = this.el.getAttribute('scale');
+          const newScale = currentScale.x === 1 ? 1.5 : 1;
+          this.el.setAttribute('animation__scale',
+            `property: scale; to: ${newScale} ${newScale} ${newScale}; dur: 500; easing: easeInOutQuad`);
         }
-        
-        #story-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #a78bfa;
-            margin-bottom: 8px;
-            text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
-        }
-        
-        #story-text {
-            font-size: 14px;
-            line-height: 1.4;
-            color: #e0e7ff;
-        }
-        
-        #progress-bar {
-            margin-top: 10px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        #progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8b5cf6, #ec4899);
-            width: 0%;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-        }
-        
-        .interaction-hint {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(167, 139, 250, 0.9);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            pointer-events: none;
-            animation: pulse 2s infinite;
-            z-index: 998;
-            display: none;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.05); }
-        }
-        
-        #debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: #0f0;
-            padding: 10px;
-            font-size: 11px;
-            border-radius: 5px;
-            z-index: 1000;
-            font-family: monospace;
-            max-height: 60px;
-            overflow-y: auto;
-        }
-    </style>
+      });
+    }
+  });
+
+  // Floating animation
+  AFRAME.registerComponent('float', {
+    schema: {
+      speed: {type: 'number', default: 2000},
+      height: {type: 'number', default: 0.2}
+    },
+    
+    init() {
+      const pos = this.el.getAttribute('position');
+      this.el.setAttribute('animation__float',
+        `property: position; to: ${pos.x} ${pos.y + this.data.height} ${pos.z}; 
+         dir: alternate; loop: true; dur: ${this.data.speed}; easing: easeInOutSine`);
+    }
+  });
+  </script>
 </head>
 <body>
-    <!-- UI Overlay -->
-    <div id="ui-overlay">
-        <div id="story-panel">
-            <div id="story-title">✨ The Magical Garden ✨</div>
-            <div id="story-text">Point your camera at the first marker to begin your journey...</div>
-            <div id="progress-bar">
-                <div id="progress-fill"></div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="interaction-hint" class="interaction-hint">👆 Tap the glowing seed!</div>
-    
-    <!-- Debug Info -->
-    <div id="debug-info">Initializing AR... Please wait...</div>
+  <!-- Initial instruction -->
+  <div class="instruction" id="instruction">
+    <h1>🌟 The Time Traveler's Journey 🌟</h1>
+    <p>Scan the markers in order to unlock the story:</p>
+    <p><strong>Marker 1</strong> → <strong>Marker 2</strong> → <strong>Marker 3</strong></p>
+    <p>Tap on objects to interact with them!</p>
+  </div>
 
-    <!-- AR Scene -->
-    <a-scene
-        vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono; patternRatio: 0.75; sourceWidth:640; sourceHeight:480; displayWidth: 640; displayHeight: 480;">
+  <!-- Story overlay -->
+  <div class="story-overlay" id="story-overlay">
+    <h2 id="story-title">The Journey Begins</h2>
+    <p id="story-text">Scan Marker 1 to discover the Ancient Portal...</p>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <!-- Control HUD -->
+  <div class="hud">
+    <button id="btn-reset" title="Reset Story">🔄</button>
+    <button id="btn-help" title="Show Help">❓</button>
+    <button id="btn-info" title="Story Info">📖</button>
+  </div>
+
+  <a-scene
+    embedded
+    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+
+    <!-- Camera -->
+    <a-entity camera></a-entity>
+
+    <!-- Lights -->
+    <a-entity light="type: ambient; intensity: 0.7; color: #FFF"></a-entity>
+    <a-entity light="type: directional; intensity: 0.8; color: #FFF" position="1 2 1"></a-entity>
+    <a-entity light="type: point; intensity: 0.5; color: #4CC3D9" position="0 3 0"></a-entity>
+
+    <!-- MARKER 1: The Portal (Torus - spinning ring) -->
+    <a-nft
+      type="nft"
+      url="markers/marker1"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance="0.01"
+      smoothThreshold="5"
+      marker-handler="markerNum: 1">
+      
+      <!-- Portal ring -->
+      <a-torus
+        position="0 0.5 0"
+        radius="0.4"
+        radius-tubular="0.08"
+        material="color: #4CC3D9; metalness: 0.8; roughness: 0.2; emissive: #4CC3D9; emissiveIntensity: 0.5"
+        rotation="90 0 0"
+        interactive-object="type: spin"
+        float="speed: 3000; height: 0.15">
         
-        <!-- Camera with wider field of view -->
-        <a-entity camera="fov: 80; zoom: 0.8" look-controls="enabled: false"></a-entity>
+        <!-- Inner glow -->
+        <a-ring
+          position="0 0 0"
+          radius-inner="0.25"
+          radius-outer="0.35"
+          material="color: #FFC65D; opacity: 0.6; transparent: true; side: double"
+          animation="property: rotation; to: 0 0 360; loop: true; dur: 8000; easing: linear">
+        </a-ring>
+      </a-torus>
+      
+      <!-- Orbiting particles -->
+      <a-sphere
+        position="0.4 0.5 0"
+        radius="0.05"
+        material="color: #FFC65D; emissive: #FFC65D; emissiveIntensity: 0.8"
+        animation="property: object3D.position.x; to: -0.4; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"
+        animation__y="property: object3D.position.y; to: 0.8; dir: alternate; loop: true; dur: 1500; easing: easeInOutSine">
+      </a-sphere>
+      
+      <!-- Text label -->
+      <a-text
+        value="Ancient Portal"
+        position="0 0 0"
+        align="center"
+        color="#FFFFFF"
+        width="2"
+        material="shader: flat"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+      </a-text>
+    </a-nft>
 
-        <!-- Marker 1: The Seed -->
-        <a-nft 
-            id="marker1" 
-            type="nft" 
-            url="markers/marker1" 
-            emitevents="true"
-            raycaster="objects: .clickable"
-            cursor="fuse: false; rayOrigin: mouse">
-            
-            <!-- Container scaled down significantly -->
-            <a-entity id="seed-container" position="0 0 0" scale="0.25 0.25 0.25">
-                
-                <!-- Base platform for reference -->
-                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
-                
-                <!-- Magical Seed -->
-                <a-sphere 
-                    id="seed"
-                    position="0 1.5 0" 
-                    radius="1" 
-                    color="#8b5cf6"
-                    metalness="0.8"
-                    roughness="0.2"
-                    emissive="#8b5cf6"
-                    emissiveIntensity="0.8"
-                    class="clickable"
-                    animation__rotate="property: rotation; dur: 4000; to: 0 360 0; easing: linear; loop: true"
-                    animation__float="property: position; dur: 2000; from: 0 1.5 0; to: 0 2 0; dir: alternate; easing: ease-in-out; loop: true">
-                </a-sphere>
-                
-                <!-- Outer glow ring 1 -->
-                <a-torus 
-                    position="0 1.5 0" 
-                    radius="1.5" 
-                    radius-tubular="0.05"
-                    color="#a78bfa"
-                    opacity="0.7"
-                    rotation="-90 0 0"
-                    animation__scale="property: scale; dur: 2000; from: 1 1 1; to: 1.4 1.4 1.4; dir: alternate; loop: true; easing: ease-in-out"
-                    animation__opacity="property: opacity; dur: 2000; from: 0.7; to: 0.2; dir: alternate; loop: true">
-                </a-torus>
-                
-                <!-- Outer glow ring 2 -->
-                <a-torus 
-                    position="0 1.5 0" 
-                    radius="2" 
-                    radius-tubular="0.05"
-                    color="#a78bfa"
-                    opacity="0.5"
-                    rotation="-90 0 0"
-                    animation__scale="property: scale; dur: 2000; from: 1 1 1; to: 1.3 1.3 1.3; dir: alternate; loop: true; easing: ease-in-out; delay: 500"
-                    animation__opacity="property: opacity; dur: 2000; from: 0.5; to: 0.1; dir: alternate; loop: true; delay: 500">
-                </a-torus>
-                
-                <!-- Bright particles -->
-                <a-sphere position="1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
-                    animation="property: position; dur: 3000; to: 1 3 1; dir: alternate; loop: true"></a-sphere>
-                <a-sphere position="-1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
-                    animation="property: position; dur: 3000; to: -1 3 1; dir: alternate; loop: true; delay: 500"></a-sphere>
-                <a-sphere position="1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
-                    animation="property: position; dur: 3000; to: 1 3 -1; dir: alternate; loop: true; delay: 1000"></a-sphere>
-                <a-sphere position="-1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
-                    animation="property: position; dur: 3000; to: -1 3 -1; dir: alternate; loop: true; delay: 1500"></a-sphere>
-                
-                <!-- Text label -->
-                <a-text 
-                    value="The Seed of Wonder" 
-                    position="0 4 0" 
-                    align="center" 
-                    color="#ffffff"
-                    width="8"
-                    wrap-count="20">
-                </a-text>
-            </a-entity>
-        </a-nft>
+    <!-- MARKER 2: The Crystal (Octahedron - crystal shape) -->
+    <a-nft
+      type="nft"
+      url="markers/marker2"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance="0.01"
+      smoothThreshold="5"
+      marker-handler="markerNum: 2">
+      
+      <!-- Crystal structure -->
+      <a-octahedron
+        position="0 0.6 0"
+        radius="0.3"
+        material="color: #7BC8A4; metalness: 0.9; roughness: 0.1; emissive: #7BC8A4; emissiveIntensity: 0.6; transparent: true; opacity: 0.9"
+        interactive-object="type: color"
+        float="speed: 2500; height: 0.2"
+        animation="property: rotation; to: 0 360 360; loop: true; dur: 10000; easing: linear">
+        
+        <!-- Inner core -->
+        <a-sphere
+          position="0 0 0"
+          radius="0.15"
+          material="color: #FFC65D; emissive: #FFC65D; emissiveIntensity: 1"
+          animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000; easing: easeInOutSine">
+        </a-sphere>
+      </a-octahedron>
+      
+      <!-- Energy rings -->
+      <a-ring
+        position="0 0.6 0"
+        radius-inner="0.35"
+        radius-outer="0.4"
+        material="color: #4CC3D9; opacity: 0.5; transparent: true; side: double"
+        rotation="0 0 0"
+        animation="property: rotation; to: 360 0 0; loop: true; dur: 3000; easing: linear">
+      </a-ring>
+      
+      <a-ring
+        position="0 0.6 0"
+        radius-inner="0.35"
+        radius-outer="0.4"
+        material="color: #EF2D5E; opacity: 0.5; transparent: true; side: double"
+        rotation="90 0 0"
+        animation="property: rotation; to: 90 360 0; loop: true; dur: 3000; easing: linear; delay: 1000">
+      </a-ring>
+      
+      <!-- Text label -->
+      <a-text
+        value="Crystal of Time"
+        position="0 0.1 0"
+        align="center"
+        color="#FFFFFF"
+        width="2"
+        material="shader: flat">
+      </a-text>
+    </a-nft>
 
-        <!-- Marker 2: The Sprout -->
-        <a-nft 
-            id="marker2" 
-            type="nft" 
-            url="markers/marker2"
-            emitevents="true"
-            raycaster="objects: .clickable"
-            cursor="fuse: false; rayOrigin: mouse">
-            
-            <a-entity id="sprout-group" visible="false" position="0 0 0" scale="0.25 0.25 0.25">
-                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
-                
-                <!-- Growing Plant -->
-                <a-cylinder 
-                    id="stem"
-                    position="0 1 0" 
-                    radius="0.2" 
-                    height="2" 
-                    color="#10b981"
-                    class="clickable">
-                </a-cylinder>
-                
-                <a-cone 
-                    position="0.5 1.5 0" 
-                    radius-bottom="0.5" 
-                    radius-top="0.05"
-                    height="1" 
-                    color="#34d399"
-                    rotation="0 0 -60"
-                    animation="property: rotation; dur: 3000; to: 0 0 -50; dir: alternate; loop: true; easing: ease-in-out">
-                </a-cone>
-                
-                <a-cone 
-                    position="-0.5 1.5 0" 
-                    radius-bottom="0.5" 
-                    radius-top="0.05"
-                    height="1" 
-                    color="#34d399"
-                    rotation="0 0 60"
-                    animation="property: rotation; dur: 3000; to: 0 0 50; dir: alternate; loop: true; easing: ease-in-out">
-                </a-cone>
-                
-                <a-sphere position="0 2.5 0" radius="0.2" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
-                    animation="property: position; dur: 2000; to: 0.7 3.5 0; dir: alternate; loop: true"></a-sphere>
-                
-                <a-text 
-                    value="The Growing Sprout" 
-                    position="0 3.5 0" 
-                    align="center" 
-                    color="#ffffff"
-                    width="8">
-                </a-text>
-            </a-entity>
-        </a-nft>
+    <!-- MARKER 3: The Guardian (Complex sculpture) -->
+    <a-nft
+      type="nft"
+      url="markers/marker3"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance="0.01"
+      smoothThreshold="5"
+      marker-handler="markerNum: 3">
+      
+      <!-- Guardian body (cylinder) -->
+      <a-cylinder
+        position="0 0.4 0"
+        radius="0.15"
+        height="0.5"
+        material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
+        interactive-object="type: scale">
+        
+        <!-- Head (sphere) -->
+        <a-sphere
+          position="0 0.35 0"
+          radius="0.2"
+          material="color: #FFC65D; metalness: 0.8; roughness: 0.2; emissive: #FFC65D; emissiveIntensity: 0.3">
+          
+          <!-- Eyes -->
+          <a-sphere
+            position="-0.08 0.05 0.15"
+            radius="0.04"
+            material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
+            animation="property: material.emissiveIntensity; to: 0.3; dir: alternate; loop: true; dur: 800">
+          </a-sphere>
+          <a-sphere
+            position="0.08 0.05 0.15"
+            radius="0.04"
+            material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
+            animation="property: material.emissiveIntensity; to: 0.3; dir: alternate; loop: true; dur: 800">
+          </a-sphere>
+        </a-sphere>
+        
+        <!-- Arms -->
+        <a-cylinder
+          position="-0.2 0 0"
+          radius="0.05"
+          height="0.4"
+          rotation="0 0 45"
+          material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
+          animation="property: rotation; to: 0 0 -45; dir: alternate; loop: true; dur: 2000">
+        </a-cylinder>
+        <a-cylinder
+          position="0.2 0 0"
+          radius="0.05"
+          height="0.4"
+          rotation="0 0 -45"
+          material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
+          animation="property: rotation; to: 0 0 45; dir: alternate; loop: true; dur: 2000">
+        </a-cylinder>
+      </a-cylinder>
+      
+      <!-- Treasure chest at base -->
+      <a-box
+        position="0 0.15 0.3"
+        width="0.3"
+        height="0.2"
+        depth="0.2"
+        material="color: #8B4513; metalness: 0.5; roughness: 0.7">
+        
+        <!-- Chest lid -->
+        <a-box
+          position="0 0.12 0"
+          width="0.32"
+          height="0.05"
+          depth="0.22"
+          material="color: #A0522D; metalness: 0.5; roughness: 0.7"
+          rotation="-30 0 0"
+          animation="property: rotation; to: 30 0 0; dir: alternate; loop: true; dur: 3000; easing: easeInOutQuad">
+        </a-box>
+        
+        <!-- Gold coins -->
+        <a-cylinder
+          position="0 0.15 0"
+          radius="0.08"
+          height="0.02"
+          material="color: #FFD700; metalness: 1; roughness: 0.2; emissive: #FFD700; emissiveIntensity: 0.5">
+        </a-cylinder>
+      </a-box>
+      
+      <!-- Text label -->
+      <a-text
+        value="Guardian's Gift"
+        position="0 0 0"
+        align="center"
+        color="#FFFFFF"
+        width="2"
+        material="shader: flat"
+        float="speed: 4000; height: 0.1">
+      </a-text>
+      
+      <!-- Victory particles -->
+      <a-sphere
+        position="0 0.8 0"
+        radius="0.03"
+        material="color: #FFD700; emissive: #FFD700; emissiveIntensity: 1"
+        animation="property: position; to: 0.3 1.2 0.3; loop: true; dur: 2000"
+        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000">
+      </a-sphere>
+      <a-sphere
+        position="0 0.8 0"
+        radius="0.03"
+        material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
+        animation="property: position; to: -0.3 1.2 -0.3; loop: true; dur: 2000; delay: 666"
+        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000; delay: 666">
+      </a-sphere>
+      <a-sphere
+        position="0 0.8 0"
+        radius="0.03"
+        material="color: #EF2D5E; emissive: #EF2D5E; emissiveIntensity: 1"
+        animation="property: position; to: 0.3 1.2 -0.3; loop: true; dur: 2000; delay: 1333"
+        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000; delay: 1333">
+      </a-sphere>
+    </a-nft>
 
-        <!-- Marker 3: The Bloom -->
-        <a-nft 
-            id="marker3" 
-            type="nft" 
-            url="markers/marker3"
-            emitevents="true"
-            raycaster="objects: .clickable"
-            cursor="fuse: false; rayOrigin: mouse">
-            
-            <a-entity id="bloom-group" visible="false" position="0 0 0" scale="0.25 0.25 0.25">
-                <a-circle position="0 0 0" radius="2" color="#222" opacity="0.3" rotation="-90 0 0"></a-circle>
-                
-                <a-cylinder 
-                    position="0 1 0" 
-                    radius="0.2" 
-                    height="2" 
-                    color="#10b981">
-                </a-cylinder>
-                
-                <!-- Flower petals -->
-                <a-entity id="flower" position="0 2.5 0" class="clickable"
-                    animation="property: rotation; dur: 6000; to: 0 360 0; easing: linear; loop: true">
-                    <a-sphere position="0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="-0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="0 0 0.7" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="0 0 -0.7" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="0.5 0 0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="-0.5 0 0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="-0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
-                    <a-sphere position="0 0 0" radius="0.4" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"></a-sphere>
-                </a-entity>
-                
-                <!-- Butterfly -->
-                <a-entity id="butterfly" visible="false" position="1.5 4 0"
-                    animation="property: position; dur: 4000; to: 1.5 5 1; dir: alternate; loop: true; easing: ease-in-out">
-                    <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="-0.3 0 0"></a-box>
-                    <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="0.3 0 0"></a-box>
-                    <a-sphere radius="0.15" color="#8b5cf6" position="0 0 0.05"></a-sphere>
-                </a-entity>
-                
-                <a-text 
-                    value="The Magical Bloom" 
-                    position="0 5 0" 
-                    align="center" 
-                    color="#ffffff"
-                    width="8">
-                </a-text>
-            </a-entity>
-        </a-nft>
-    </a-scene>
+  </a-scene>
 
-    <script>
-        // Game State
-        const gameState = {
-            marker1Found: false,
-            marker2Found: false,
-            marker3Found: false,
-            seedClicked: false,
-            sproutClicked: false,
-            flowerClicked: false,
-            currentStage: 0
-        };
+  <script>
+    // Initialize story
+    updateStory();
 
-        const storyStages = [
-            { title: "✨ The Magical Garden ✨", text: "Point your camera at the first marker to begin...", progress: 0 },
-            { title: "🌱 Discovery", text: "You found the Seed! Tap it to plant it...", progress: 33 },
-            { title: "🌿 Growth", text: "The seed is sprouting! Find the second marker...", progress: 50 },
-            { title: "🌸 Transformation", text: "The sprout grows! Tap it to give energy...", progress: 66 },
-            { title: "🦋 Bloom", text: "Find the final marker to see the bloom...", progress: 83 },
-            { title: "✨ Magic Revealed", text: "The flower bloomed! Tap it to reveal magic...", progress: 100 },
-            { title: "🎉 Complete", text: "A butterfly emerges! The cycle of wonder continues...", progress: 100 }
-        ];
+    // Button handlers
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      storyState.marker1Scanned = false;
+      storyState.marker2Scanned = false;
+      storyState.marker3Scanned = false;
+      storyState.currentChapter = 0;
+      updateStory();
+      document.getElementById('instruction').classList.remove('hidden');
+    });
 
-        const storyTitle = document.getElementById('story-title');
-        const storyText = document.getElementById('story-text');
-        const progressFill = document.getElementById('progress-fill');
-        const hint = document.getElementById('interaction-hint');
-        const debug = document.getElementById('debug-info');
+    document.getElementById('btn-help').addEventListener('click', () => {
+      const instruction = document.getElementById('instruction');
+      instruction.classList.toggle('hidden');
+    });
 
-        function updateStory(index) {
-            if (index >= storyStages.length) return;
-            const stage = storyStages[index];
-            storyTitle.textContent = stage.title;
-            storyText.textContent = stage.text;
-            progressFill.style.width = stage.progress + '%';
-            gameState.currentStage = index;
-        }
-
-        function showHint() {
-            hint.style.display = 'block';
-            setTimeout(() => hint.style.display = 'none', 4000);
-        }
-
-        function log(msg) {
-            const time = new Date().toLocaleTimeString();
-            debug.innerHTML = `[${time}] ${msg}<br>` + debug.innerHTML;
-        }
-
-        // Scene ready
-        const scene = document.querySelector('a-scene');
-        scene.addEventListener('loaded', () => {
-            log('✓ AR Scene loaded successfully');
-            log('Camera ready. Point at marker 1');
-        });
-
-        // Marker 1
-        const marker1 = document.getElementById('marker1');
-        marker1.addEventListener('markerFound', () => {
-            log('✓✓✓ MARKER 1 DETECTED! Seed should be visible!');
-            if (!gameState.marker1Found) {
-                gameState.marker1Found = true;
-                updateStory(1);
-                showHint();
-            }
-        });
-        marker1.addEventListener('markerLost', () => {
-            log('Marker 1 lost - reposition camera');
-        });
-
-        // Seed click
-        const seed = document.getElementById('seed');
-        seed.addEventListener('click', function() {
-            log('✓ Seed clicked!');
-            if (gameState.marker1Found && !gameState.seedClicked) {
-                gameState.seedClicked = true;
-                updateStory(2);
-                this.parentElement.setAttribute('animation', 'property: scale; to: 0.08 0.08 0.08; dur: 1000');
-            }
-        });
-
-        // Marker 2
-        const marker2 = document.getElementById('marker2');
-        marker2.addEventListener('markerFound', () => {
-            if (gameState.seedClicked && !gameState.marker2Found) {
-                log('✓✓✓ MARKER 2 DETECTED! Sprout visible!');
-                gameState.marker2Found = true;
-                document.getElementById('sprout-group').setAttribute('visible', true);
-                updateStory(3);
-                showHint();
-            } else if (!gameState.seedClicked) {
-                log('⚠ Complete Marker 1 first!');
-            }
-        });
-
-        // Stem click
-        const stem = document.getElementById('stem');
-        stem.addEventListener('click', function() {
-            log('✓ Stem clicked!');
-            if (gameState.marker2Found && !gameState.sproutClicked) {
-                gameState.sproutClicked = true;
-                updateStory(4);
-                this.parentElement.setAttribute('animation', 'property: scale; to: 0.22 0.22 0.22; dur: 2000');
-            }
-        });
-
-        // Marker 3
-        const marker3 = document.getElementById('marker3');
-        marker3.addEventListener('markerFound', () => {
-            if (gameState.sproutClicked && !gameState.marker3Found) {
-                log('✓✓✓ MARKER 3 DETECTED! Flower visible!');
-                gameState.marker3Found = true;
-                document.getElementById('bloom-group').setAttribute('visible', true);
-                updateStory(5);
-                showHint();
-            } else if (!gameState.sproutClicked) {
-                log('⚠ Complete Marker 2 first!');
-            }
-        });
-
-        // Flower click
-        const flower = document.getElementById('flower');
-        flower.addEventListener('click', function() {
-            log('✓ Flower clicked! Butterfly appears!');
-            if (gameState.marker3Found && !gameState.flowerClicked) {
-                gameState.flowerClicked = true;
-                updateStory(6);
-                document.getElementById('butterfly').setAttribute('visible', true);
-                this.parentElement.setAttribute('animation', 'property: scale; to: 0.25 0.25 0.25; dur: 2000');
-            }
-        });
-
-        // Mobile touch handling
-        let touchStartTime = 0;
-        document.addEventListener('touchstart', (e) => {
-            touchStartTime = Date.now();
-        });
-
-        document.addEventListener('touchend', (e) => {
-            const touchDuration = Date.now() - touchStartTime;
-            if (touchDuration < 300) {
-                const touch = e.changedTouches[0];
-                const clickEvent = new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                });
-                document.elementFromPoint(touch.clientX, touch.clientY)?.dispatchEvent(clickEvent);
-            }
-        });
-
-        // Error handling
-        window.addEventListener('error', (e) => {
-            log('ERROR: ' + e.message);
-        });
-
-        scene.addEventListener('arjs-video-loaded', () => {
-            log('✓ Camera stream active');
-        });
-    </script>
+    document.getElementById('btn-info').addEventListener('click', () => {
+      const scanned = [];
+      if (storyState.marker1Scanned) scanned.push('Marker 1 ✓');
+      if (storyState.marker2Scanned) scanned.push('Marker 2 ✓');
+      if (storyState.marker3Scanned) scanned.push('Marker 3 ✓');
+      
+      const message = scanned.length > 0 
+        ? `Progress: ${scanned.join(', ')}` 
+        : 'No markers scanned yet. Start with Marker 1!';
+      
+      alert(message);
+    });
+  </script>
 </body>
 </html>
