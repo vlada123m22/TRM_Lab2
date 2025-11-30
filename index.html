@@ -4,13 +4,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Magical Garden - AR Experience</title>
+    
+    <!-- Preconnect to CDNs for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://raw.githack.com">
+    
+    <!-- Load scripts with async/defer for non-blocking -->
     <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1c2407b26c61958baa93967b5412487cd94b290b/dist/aframe-master.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
         }
         
         #ui-overlay {
@@ -154,23 +161,9 @@
                     roughness="0.2"
                     emissive="#8b5cf6"
                     emissiveIntensity="0.8"
-                    class="clickable">
-                    <a-animation
-                        attribute="rotation"
-                        dur="4000"
-                        to="0 360 0"
-                        easing="linear"
-                        repeat="indefinite">
-                    </a-animation>
-                    <a-animation
-                        attribute="position"
-                        dur="2000"
-                        from="0 1.5 0"
-                        to="0 2 0"
-                        direction="alternate"
-                        easing="ease-in-out"
-                        repeat="indefinite">
-                    </a-animation>
+                    class="clickable"
+                    animation__rotate="property: rotation; dur: 4000; to: 0 360 0; easing: linear; loop: true"
+                    animation__float="property: position; dur: 2000; from: 0 1.5 0; to: 0 2 0; dir: alternate; easing: ease-in-out; loop: true">
                 </a-sphere>
                 
                 <!-- Outer glow ring 1 -->
@@ -180,24 +173,9 @@
                     radius-tubular="0.05"
                     color="#a78bfa"
                     opacity="0.7"
-                    rotation="-90 0 0">
-                    <a-animation
-                        attribute="scale"
-                        dur="2000"
-                        from="1 1 1"
-                        to="1.4 1.4 1.4"
-                        direction="alternate"
-                        repeat="indefinite"
-                        easing="ease-in-out">
-                    </a-animation>
-                    <a-animation
-                        attribute="opacity"
-                        dur="2000"
-                        from="0.7"
-                        to="0.2"
-                        direction="alternate"
-                        repeat="indefinite">
-                    </a-animation>
+                    rotation="-90 0 0"
+                    animation__scale="property: scale; dur: 2000; from: 1 1 1; to: 1.4 1.4 1.4; dir: alternate; loop: true; easing: ease-in-out"
+                    animation__opacity="property: opacity; dur: 2000; from: 0.7; to: 0.2; dir: alternate; loop: true">
                 </a-torus>
                 
                 <!-- Outer glow ring 2 -->
@@ -207,41 +185,20 @@
                     radius-tubular="0.05"
                     color="#a78bfa"
                     opacity="0.5"
-                    rotation="-90 0 0">
-                    <a-animation
-                        attribute="scale"
-                        dur="2000"
-                        from="1 1 1"
-                        to="1.3 1.3 1.3"
-                        direction="alternate"
-                        repeat="indefinite"
-                        easing="ease-in-out"
-                        begin="500">
-                    </a-animation>
-                    <a-animation
-                        attribute="opacity"
-                        dur="2000"
-                        from="0.5"
-                        to="0.1"
-                        direction="alternate"
-                        repeat="indefinite"
-                        begin="500">
-                    </a-animation>
+                    rotation="-90 0 0"
+                    animation__scale="property: scale; dur: 2000; from: 1 1 1; to: 1.3 1.3 1.3; dir: alternate; loop: true; easing: ease-in-out; delay: 500"
+                    animation__opacity="property: opacity; dur: 2000; from: 0.5; to: 0.1; dir: alternate; loop: true; delay: 500">
                 </a-torus>
                 
                 <!-- Bright particles -->
-                <a-sphere position="1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="3000" to="1 3 1" direction="alternate" repeat="indefinite"></a-animation>
-                </a-sphere>
-                <a-sphere position="-1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="3000" to="-1 3 1" direction="alternate" repeat="indefinite" begin="500"></a-animation>
-                </a-sphere>
-                <a-sphere position="1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="3000" to="1 3 -1" direction="alternate" repeat="indefinite" begin="1000"></a-animation>
-                </a-sphere>
-                <a-sphere position="-1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="3000" to="-1 3 -1" direction="alternate" repeat="indefinite" begin="1500"></a-animation>
-                </a-sphere>
+                <a-sphere position="1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
+                    animation="property: position; dur: 3000; to: 1 3 1; dir: alternate; loop: true"></a-sphere>
+                <a-sphere position="-1 1.5 1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
+                    animation="property: position; dur: 3000; to: -1 3 1; dir: alternate; loop: true; delay: 500"></a-sphere>
+                <a-sphere position="1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
+                    animation="property: position; dur: 3000; to: 1 3 -1; dir: alternate; loop: true; delay: 1000"></a-sphere>
+                <a-sphere position="-1 1.5 -1" radius="0.15" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
+                    animation="property: position; dur: 3000; to: -1 3 -1; dir: alternate; loop: true; delay: 1500"></a-sphere>
                 
                 <!-- Text label -->
                 <a-text 
@@ -283,15 +240,8 @@
                     radius-top="0.05"
                     height="1" 
                     color="#34d399"
-                    rotation="0 0 -60">
-                    <a-animation
-                        attribute="rotation"
-                        dur="3000"
-                        to="0 0 -50"
-                        direction="alternate"
-                        repeat="indefinite"
-                        easing="ease-in-out">
-                    </a-animation>
+                    rotation="0 0 -60"
+                    animation="property: rotation; dur: 3000; to: 0 0 -50; dir: alternate; loop: true; easing: ease-in-out">
                 </a-cone>
                 
                 <a-cone 
@@ -300,20 +250,12 @@
                     radius-top="0.05"
                     height="1" 
                     color="#34d399"
-                    rotation="0 0 60">
-                    <a-animation
-                        attribute="rotation"
-                        dur="3000"
-                        to="0 0 50"
-                        direction="alternate"
-                        repeat="indefinite"
-                        easing="ease-in-out">
-                    </a-animation>
+                    rotation="0 0 60"
+                    animation="property: rotation; dur: 3000; to: 0 0 50; dir: alternate; loop: true; easing: ease-in-out">
                 </a-cone>
                 
-                <a-sphere position="0 2.5 0" radius="0.2" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1">
-                    <a-animation attribute="position" dur="2000" to="0.7 3.5 0" direction="alternate" repeat="indefinite"></a-animation>
-                </a-sphere>
+                <a-sphere position="0 2.5 0" radius="0.2" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"
+                    animation="property: position; dur: 2000; to: 0.7 3.5 0; dir: alternate; loop: true"></a-sphere>
                 
                 <a-text 
                     value="The Growing Sprout" 
@@ -345,7 +287,8 @@
                 </a-cylinder>
                 
                 <!-- Flower petals -->
-                <a-entity id="flower" position="0 2.5 0" class="clickable">
+                <a-entity id="flower" position="0 2.5 0" class="clickable"
+                    animation="property: rotation; dur: 6000; to: 0 360 0; easing: linear; loop: true">
                     <a-sphere position="0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
                     <a-sphere position="-0.7 0 0" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
                     <a-sphere position="0 0 0.7" radius="0.5" color="#ec4899" emissive="#ec4899" emissiveIntensity="0.5"></a-sphere>
@@ -355,30 +298,14 @@
                     <a-sphere position="0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
                     <a-sphere position="-0.5 0 -0.5" radius="0.5" color="#f472b6" emissive="#f472b6" emissiveIntensity="0.5"></a-sphere>
                     <a-sphere position="0 0 0" radius="0.4" color="#fbbf24" emissive="#fbbf24" emissiveIntensity="1"></a-sphere>
-                    
-                    <a-animation
-                        attribute="rotation"
-                        dur="6000"
-                        to="0 360 0"
-                        easing="linear"
-                        repeat="indefinite">
-                    </a-animation>
                 </a-entity>
                 
                 <!-- Butterfly -->
-                <a-entity id="butterfly" visible="false" position="1.5 4 0">
+                <a-entity id="butterfly" visible="false" position="1.5 4 0"
+                    animation="property: position; dur: 4000; to: 1.5 5 1; dir: alternate; loop: true; easing: ease-in-out">
                     <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="-0.3 0 0"></a-box>
                     <a-box width="0.6" height="0.15" depth="0.05" color="#fbbf24" position="0.3 0 0"></a-box>
                     <a-sphere radius="0.15" color="#8b5cf6" position="0 0 0.05"></a-sphere>
-                    
-                    <a-animation
-                        attribute="position"
-                        dur="4000"
-                        to="1.5 5 1"
-                        direction="alternate"
-                        repeat="indefinite"
-                        easing="ease-in-out">
-                    </a-animation>
                 </a-entity>
                 
                 <a-text 
@@ -414,23 +341,27 @@
             { title: "🎉 Complete", text: "A butterfly emerges! The cycle of wonder continues...", progress: 100 }
         ];
 
+        const storyTitle = document.getElementById('story-title');
+        const storyText = document.getElementById('story-text');
+        const progressFill = document.getElementById('progress-fill');
+        const hint = document.getElementById('interaction-hint');
+        const debug = document.getElementById('debug-info');
+
         function updateStory(index) {
             if (index >= storyStages.length) return;
             const stage = storyStages[index];
-            document.getElementById('story-title').textContent = stage.title;
-            document.getElementById('story-text').textContent = stage.text;
-            document.getElementById('progress-fill').style.width = stage.progress + '%';
+            storyTitle.textContent = stage.title;
+            storyText.textContent = stage.text;
+            progressFill.style.width = stage.progress + '%';
             gameState.currentStage = index;
         }
 
         function showHint() {
-            const hint = document.getElementById('interaction-hint');
             hint.style.display = 'block';
             setTimeout(() => hint.style.display = 'none', 4000);
         }
 
         function log(msg) {
-            const debug = document.getElementById('debug-info');
             const time = new Date().toLocaleTimeString();
             debug.innerHTML = `[${time}] ${msg}<br>` + debug.innerHTML;
         }
@@ -526,7 +457,7 @@
 
         document.addEventListener('touchend', (e) => {
             const touchDuration = Date.now() - touchStartTime;
-            if (touchDuration < 300) { // Quick tap
+            if (touchDuration < 300) {
                 const touch = e.changedTouches[0];
                 const clickEvent = new MouseEvent('click', {
                     bubbles: true,
