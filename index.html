@@ -164,140 +164,231 @@
     }
   </style>
 
-<!-- Updated logic: Option A — Skip ONLY seed requirement -->
-<script>
-// Story state management
-const storyState = {
-  marker1Scanned: false,
-  marker2Scanned: false,
-  marker3Scanned: false,
-  seedPlanted: true, // Skip seed requirement
-  plantGrown: false,
-  flowerBloomed: false,
-  currentChapter: 0,
-  totalChapters: 3
-};
+  <script>
+  // Story state management
+  const storyState = {
+    marker1Scanned: false,
+    marker2Scanned: false,
+    marker3Scanned: false,
+    seedPlanted: false,
+    plantGrown: false,
+    flowerBloomed: false,
+    currentChapter: 0,
+    totalChapters: 3
+  };
 
-const storyTexts = {
-  0: { title: "🌱 The Garden of Life 🌱", text: "Find the SOIL marker to begin your garden..." },
-  1: { title: "Chapter 1", text: "You found the soil! Growth will continue automatically." },
-  2: { title: "Chapter 2: The Young Sprout", text: "Your sprout is growing! Now find the PLANT marker..." },
-  3: { title: "Chapter 3: The Beautiful Flower", text: "Your plant has bloomed! Tap it to attract butterflies!" }
-};
+  const storyTexts = {
+    0: {
+      title: "🌱 The Garden of Life 🌱",
+      text: "Find the SOIL marker to begin your garden..."
+    },
+    1: {
+      title: "",
+      text: "TAP the seed"
+    },
+    2: {
+      title: "Chapter 2: The Young Sprout",
+      text: "Your seed has sprouted! Now find the PLANT marker to continue the journey... 🌿"
+    },
+    3: {
+      title: "Chapter 3: The Beautiful Flower",
+      text: "Your plant has bloomed into a magnificent flower! TAP it to attract butterflies! 🌸🦋"
+    }
+  };
 
-function updateStory() {
-  const title = document.getElementById('story-title');
-  const text = document.getElementById('story-text');
-  const progress = document.getElementById('progress-fill');
-  const story = storyTexts[storyState.currentChapter];
+  // Update story UI
+  function updateStory() {
+    const overlay = document.getElementById('story-overlay');
+    const title = document.getElementById('story-title');
+    const text = document.getElementById('story-text');
+    const progress = document.getElementById('progress-fill');
+    
+    const story = storyTexts[storyState.currentChapter];
+    title.textContent = story.title;
+    text.textContent = story.text;
+    
+    const progressPercent = (storyState.currentChapter / storyState.totalChapters) * 100;
+    progress.style.width = progressPercent + '%';
+    
+    // Hide instruction after first scan
+    if (storyState.currentChapter > 0) {
+      document.getElementById('instruction').classList.add('hidden');
+    }
 
-  title.textContent = story.title;
-  text.textContent = story.text;
-  progress.style.width = (storyState.currentChapter / storyState.totalChapters) * 100 + '%';
-
-  if (storyState.currentChapter > 0) {
-    document.getElementById('instruction')?.classList.add('hidden');
+    // Show tap hint for marker 1
+    const tapHint = document.getElementById('tap-hint');
+    if (storyState.currentChapter === 1 && !storyState.seedPlanted) {
+      tapHint.classList.remove('hidden');
+    } else {
+      tapHint.classList.add('hidden');
+    }
   }
 
-  document.getElementById('tap-hint')?.classList.add('hidden');
-}
-
-AFRAME.registerComponent('marker-handler', {
-  schema: { markerNum: { type: 'number', default: 1 } },
-
-  init() {
-    this.el.addEventListener('markerFound', () => {
-      const marker = this.data.markerNum;
-      console.log(`Marker ${marker} found`);
-
-      // --- BLOCK SCANNING OUT OF ORDER ---
-      // BLOCK MARKER 2 if marker 1 not scanned
-      if (marker === 2 && !storyState.marker1Scanned) {
-        console.warn('Cannot scan marker 2 before marker 1');
-        this.el.setAttribute('visible', false);
-        return;
-      }
-
-      // BLOCK MARKER 3 if markers 1 AND 2 not scanned
-      if (marker === 3) {
-        if (!storyState.marker1Scanned || !storyState.marker2Scanned) {
-          console.warn('Cannot scan marker 3 before marker 1 and 2');
-          this.el.setAttribute('visible', false);
-          return;
-        }
-        // Ensure marker 3 becomes visible again once unlocked
-        this.el.setAttribute('visible', true);
-      }
-
-      // --- NORMAL LOGIC ---
-      if (marker === 1) {
-        storyState.marker1Scanned = true;
-
-        if (storyState.currentChapter === 0) {
-          storyState.currentChapter = 1;
-          updateStory();
-
-          setTimeout(() => {
-            storyState.currentChapter = 2;
-            storyState.plantGrown = true;
+  // Marker visibility components
+  AFRAME.registerComponent('marker-handler', {
+    schema: {
+      markerNum: {type: 'number', default: 1}
+    },
+    
+    init() {
+      this.el.addEventListener('markerFound', () => {
+        console.log(`Marker ${this.data.markerNum} found`);
+        
+        // MARKER 1: SOIL
+        if (this.data.markerNum === 1) {
+          storyState.marker1Scanned = true;
+          if (storyState.currentChapter === 0) {
+            storyState.currentChapter = 1;
             updateStory();
-          }, 1200);
+          }
+        } 
+        // MARKER 2: PLANT (only visible if seed was planted)
+        else if (this.data.markerNum === 2) {
+          if (storyState.marker1Scanned && storyState.seedPlanted) {
+            storyState.marker2Scanned = true;
+            if (storyState.currentChapter === 2) {
+              storyState.plantGrown = true;
+              // Auto-grow the plant after a moment
+              setTimeout(() => {
+                const plant = document.getElementById('small-plant');
+                if (plant) {
+                  plant.emit('grow-plant');
+                }
+              }, 500);
+            }
+          } else {
+            // Hide marker2 content if marker1 seed not planted yet
+            this.el.setAttribute('visible', false);
+          }
+        } 
+        // MARKER 3: FLOWER (only visible if plant grown)
+        else if (this.data.markerNum === 3) {
+          if (storyState.marker1Scanned && storyState.marker2Scanned && storyState.plantGrown) {
+            storyState.marker3Scanned = true;
+            if (storyState.currentChapter < 3) {
+              storyState.currentChapter = 3;
+              updateStory();
+            }
+          } else {
+            // Hide marker3 content if previous markers not completed
+            this.el.setAttribute('visible', false);
+          }
         }
-      }
+      });
+      
+      this.el.addEventListener('markerLost', () => {
+        console.log(`Marker ${this.data.markerNum} lost`);
+      });
+    }
+  });
 
-      else if (marker === 2) {
-        storyState.marker2Scanned = true;
-      }
-
-      else if (marker === 3) {
-        storyState.marker3Scanned = true;
-
-        if (storyState.currentChapter < 3) {
-          storyState.currentChapter = 3;
-          updateStory();
-        }
-      }
-    });
-  }
-});
-  }
-});
-
-
-// Ensure flower-interactive component exists so butterflies spawn
-AFRAME.registerComponent('flower-interactive', {
-  init() {
-    this.butterfliesSpawned = false;
-
-    this.el.addEventListener('click', () => {
-      if (!this.butterfliesSpawned && storyState.marker3Scanned) {
-        this.butterfliesSpawned = true;
-        storyState.flowerBloomed = true;
-
-        const marker = this.el.parentEl;
-        for (let i = 0; i < 3; i++) {
+  // Seed planting interaction
+  AFRAME.registerComponent('plantable-seed', {
+    init() {
+      this.planted = false;
+      
+      this.el.addEventListener('click', () => {
+        if (!this.planted && storyState.marker1Scanned && !storyState.seedPlanted) {
+          this.planted = true;
+          storyState.seedPlanted = true;
+          
+          // Animate seed going down into soil
+          this.el.setAttribute('animation', 
+            'property: position; to: 0 -0.1 0; dur: 800; easing: easeInQuad');
+          
+          // After planting, show sprout
           setTimeout(() => {
-            const butterfly = document.createElement('a-entity');
-            butterfly.setAttribute('geometry', 'primitive: sphere; radius: 0.05');
-            butterfly.setAttribute('material', `color: ${['#FF69B4', '#FFD700', '#00CED1'][i]}`);
-            butterfly.setAttribute('position', `${Math.random() * 0.6 - 0.3} 0.8 ${Math.random() * 0.6 - 0.3}`);
-
-            butterfly.setAttribute('animation',
-              `property: position; to: ${Math.random() * 1.2 - 0.6} ${0.5 + Math.random() * 0.5} ${Math.random() * 1.2 - 0.6}; dur: ${2000 + Math.random() * 1000}; easing: easeInOutSine; loop: true; dir: alternate`);
-
-            marker.appendChild(butterfly);
-          }, i * 300);
+            this.el.setAttribute('visible', false);
+            const sprout = document.getElementById('sprout');
+            if (sprout) {
+              sprout.setAttribute('visible', true);
+              sprout.emit('grow');
+            }
+            
+            // Advance to chapter 2
+            storyState.currentChapter = 2;
+            updateStory();
+          }, 1000);
         }
+      });
+    }
+  });
 
-        this.el.setAttribute('animation__pulse',
-          'property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutSine; loop: true; dir: alternate');
-      }
-    });
-  }
-});
-</script>
+  // Sprout growing animation
+  AFRAME.registerComponent('growing-sprout', {
+    init() {
+      this.el.addEventListener('grow', () => {
+        // Start small and grow
+        this.el.setAttribute('scale', '0.01 0.01 0.01');
+        this.el.setAttribute('animation__scale', 
+          'property: scale; to: 1 1 1; dur: 2000; easing: easeOutElastic');
+      });
+    }
+  });
 
+  // Plant growing component
+  AFRAME.registerComponent('plant-grower', {
+    init() {
+      this.el.addEventListener('grow-plant', () => {
+        // Animate leaves spreading
+        const leaves = this.el.querySelectorAll('.leaf');
+        leaves.forEach((leaf, i) => {
+          setTimeout(() => {
+            leaf.setAttribute('animation', 
+              'property: scale; to: 1.5 1.5 1.5; dur: 1000; easing: easeOutBack');
+          }, i * 200);
+        });
+        
+        // Make stem taller
+        const stem = this.el.querySelector('.stem');
+        if (stem) {
+          stem.setAttribute('animation',
+            'property: height; to: 0.8; dur: 1500; easing: easeOutQuad');
+        }
+      });
+    }
+  });
 
+  // Flower interaction - attracts butterflies
+  AFRAME.registerComponent('flower-interactive', {
+    init() {
+      this.butterfliesSpawned = false;
+      
+      this.el.addEventListener('click', () => {
+        if (!this.butterfliesSpawned && storyState.marker3Scanned) {
+          this.butterfliesSpawned = true;
+          storyState.flowerBloomed = true;
+          
+          // Spawn butterflies
+          const marker = this.el.parentEl;
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              const butterfly = document.createElement('a-entity');
+              butterfly.setAttribute('geometry', 'primitive: sphere; radius: 0.05');
+              butterfly.setAttribute('material', `color: ${['#FF69B4', '#FFD700', '#00CED1'][i]}; emissive: ${['#FF69B4', '#FFD700', '#00CED1'][i]}; emissiveIntensity: 0.5`);
+              butterfly.setAttribute('position', `${Math.random() * 0.6 - 0.3} 0.8 ${Math.random() * 0.6 - 0.3}`);
+              
+              // Butterfly flight animation
+              butterfly.setAttribute('animation',
+                `property: position; 
+                 to: ${Math.random() * 1.2 - 0.6} ${0.5 + Math.random() * 0.5} ${Math.random() * 1.2 - 0.6}; 
+                 dur: ${2000 + Math.random() * 1000}; 
+                 easing: easeInOutSine; 
+                 loop: true; 
+                 dir: alternate`);
+              
+              marker.appendChild(butterfly);
+            }, i * 300);
+          }
+          
+          // Flower pulse animation
+          this.el.setAttribute('animation__pulse',
+            'property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutSine; loop: true; dir: alternate');
+        }
+      });
+    }
+  });
+  </script>
 </head>
 <body>
 
