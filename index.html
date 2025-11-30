@@ -286,34 +286,35 @@
   AFRAME.registerComponent('plantable-seed', {
     init() {
       this.planted = false;
-      
-      this.el.addEventListener('click', () => {
-        if (!this.planted && storyState.marker1Scanned && !storyState.seedPlanted) {
-          this.planted = true;
-          storyState.seedPlanted = true;
-          
-          // Animate seed going down into soil
-          this.el.setAttribute('animation', 
-            'property: position; to: 0 -0.1 0; dur: 800; easing: easeInQuad');
-          
-          // After planting, show sprout
-          setTimeout(() => {
-            this.el.setAttribute('visible', false);
-            const sprout = document.getElementById('sprout');
-            if (sprout) {
-              sprout.setAttribute('visible', true);
-              sprout.emit('grow');
-            }
-            
-            // Advance to chapter 2
-            storyState.currentChapter = 2;
-            updateStory();
-          }, 1000);
-        }
-      });
     }
   });
 
+  // Global function to plant seed
+  function plantSeed() {
+    const seed = document.getElementById('seed');
+    if (seed && storyState.marker1Scanned && !storyState.seedPlanted) {
+      storyState.seedPlanted = true;
+      
+      // Animate seed going down into soil
+      seed.setAttribute('animation', 
+        'property: position; to: 0 -0.1 0; dur: 800; easing: easeInQuad');
+      
+      // After planting, show sprout
+      setTimeout(() => {
+        seed.setAttribute('visible', false);
+        const sprout = document.getElementById('sprout');
+        if (sprout) {
+          sprout.setAttribute('visible', true);
+          sprout.emit('grow');
+        }
+        
+        // Advance to chapter 2
+        storyState.currentChapter = 2;
+        updateStory();
+      }, 1000);
+    }
+  }
+  
   // Sprout growing animation
   AFRAME.registerComponent('growing-sprout', {
     init() {
