@@ -282,13 +282,6 @@
     }
   });
 
-  // Seed planting interaction
-  AFRAME.registerComponent('plantable-seed', {
-    init() {
-      this.planted = false;
-    }
-  });
-
   // Global function to plant seed
   function plantSeed() {
     const seed = document.getElementById('seed');
