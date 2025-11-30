@@ -282,6 +282,18 @@
     }
   });
 
+ // Seed planting interaction 
+  AFRAME.registerComponent('plantable-seed', {
+    init() {
+      // Seed is now just decorative, no planting needed
+    }
+  });
+
+  // Global function to plant seed (removed - no longer needed)
+  function plantSeed() {
+    // Function removed - direct progression to marker 2
+  }
+
   // Global function to plant seed
   function plantSeed() {
     const seed = document.getElementById('seed');
