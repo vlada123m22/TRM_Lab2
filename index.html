@@ -165,6 +165,7 @@
   </style>
 
 
+
 <script>
 // Story state management
 const storyState = {
@@ -210,6 +211,20 @@ AFRAME.registerComponent('marker-handler', {
       const marker = this.data.markerNum;
       console.log(`Marker ${marker} found`);
 
+      // --- BLOCK SCANNING OUT OF ORDER ---
+      if (marker === 2 && !storyState.marker1Scanned) {
+        console.warn('Cannot scan marker 2 before marker 1');
+        this.el.setAttribute('visible', false);
+        return;
+      }
+
+      if (marker === 3 && (!storyState.marker1Scanned || !storyState.marker2Scanned)) {
+        console.warn('Cannot scan marker 3 before marker 1 and 2');
+        this.el.setAttribute('visible', false);
+        return;
+      }
+
+      // --- NORMAL LOGIC ---
       if (marker === 1) {
         storyState.marker1Scanned = true;
 
@@ -217,10 +232,9 @@ AFRAME.registerComponent('marker-handler', {
           storyState.currentChapter = 1;
           updateStory();
 
-          // Automatically move to Chapter 2 without planting
           setTimeout(() => {
             storyState.currentChapter = 2;
-            storyState.plantGrown = true; // ensure plant is considered grown so butterflies will spawn
+            storyState.plantGrown = true;
             updateStory();
           }, 1200);
         }
@@ -239,6 +253,8 @@ AFRAME.registerComponent('marker-handler', {
         }
       }
     });
+  }
+});
   }
 });
 
@@ -275,6 +291,8 @@ AFRAME.registerComponent('flower-interactive', {
   }
 });
 </script>
+
+
 
 </head>
 <body>
