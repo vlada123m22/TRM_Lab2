@@ -166,6 +166,7 @@
 
 
 
+<!-- Updated logic: Option A — Skip ONLY seed requirement -->
 <script>
 // Story state management
 const storyState = {
@@ -212,16 +213,22 @@ AFRAME.registerComponent('marker-handler', {
       console.log(`Marker ${marker} found`);
 
       // --- BLOCK SCANNING OUT OF ORDER ---
+      // BLOCK MARKER 2 if marker 1 not scanned
       if (marker === 2 && !storyState.marker1Scanned) {
         console.warn('Cannot scan marker 2 before marker 1');
         this.el.setAttribute('visible', false);
         return;
       }
 
-      if (marker === 3 && (!storyState.marker1Scanned || !storyState.marker2Scanned)) {
-        console.warn('Cannot scan marker 3 before marker 1 and 2');
-        this.el.setAttribute('visible', false);
-        return;
+      // BLOCK MARKER 3 if markers 1 AND 2 not scanned
+      if (marker === 3) {
+        if (!storyState.marker1Scanned || !storyState.marker2Scanned) {
+          console.warn('Cannot scan marker 3 before marker 1 and 2');
+          this.el.setAttribute('visible', false);
+          return;
+        }
+        // Ensure marker 3 becomes visible again once unlocked
+        this.el.setAttribute('visible', true);
       }
 
       // --- NORMAL LOGIC ---
@@ -257,6 +264,40 @@ AFRAME.registerComponent('marker-handler', {
 });
   }
 });
+
+
+// Ensure flower-interactive component exists so butterflies spawn
+AFRAME.registerComponent('flower-interactive', {
+  init() {
+    this.butterfliesSpawned = false;
+
+    this.el.addEventListener('click', () => {
+      if (!this.butterfliesSpawned && storyState.marker3Scanned) {
+        this.butterfliesSpawned = true;
+        storyState.flowerBloomed = true;
+
+        const marker = this.el.parentEl;
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const butterfly = document.createElement('a-entity');
+            butterfly.setAttribute('geometry', 'primitive: sphere; radius: 0.05');
+            butterfly.setAttribute('material', `color: ${['#FF69B4', '#FFD700', '#00CED1'][i]}`);
+            butterfly.setAttribute('position', `${Math.random() * 0.6 - 0.3} 0.8 ${Math.random() * 0.6 - 0.3}`);
+
+            butterfly.setAttribute('animation',
+              `property: position; to: ${Math.random() * 1.2 - 0.6} ${0.5 + Math.random() * 0.5} ${Math.random() * 1.2 - 0.6}; dur: ${2000 + Math.random() * 1000}; easing: easeInOutSine; loop: true; dir: alternate`);
+
+            marker.appendChild(butterfly);
+          }, i * 300);
+        }
+
+        this.el.setAttribute('animation__pulse',
+          'property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutSine; loop: true; dir: alternate');
+      }
+    });
+  }
+});
+</script>
 
 
 // Ensure flower-interactive component exists so butterflies spawn
