@@ -164,7 +164,7 @@
     }
   </style>
 
-<!-- Updated logic: Option A — Skip ONLY seed requirement -->
+
 <script>
 // Story state management
 const storyState = {
@@ -220,7 +220,7 @@ AFRAME.registerComponent('marker-handler', {
           // Automatically move to Chapter 2 without planting
           setTimeout(() => {
             storyState.currentChapter = 2;
-            storyState.plantGrown = true;
+            storyState.plantGrown = true; // ensure plant is considered grown so butterflies will spawn
             updateStory();
           }, 1200);
         }
@@ -237,6 +237,39 @@ AFRAME.registerComponent('marker-handler', {
           storyState.currentChapter = 3;
           updateStory();
         }
+      }
+    });
+  }
+});
+
+
+// Ensure flower-interactive component exists so butterflies spawn
+AFRAME.registerComponent('flower-interactive', {
+  init() {
+    this.butterfliesSpawned = false;
+
+    this.el.addEventListener('click', () => {
+      if (!this.butterfliesSpawned && storyState.marker3Scanned) {
+        this.butterfliesSpawned = true;
+        storyState.flowerBloomed = true;
+
+        const marker = this.el.parentEl;
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const butterfly = document.createElement('a-entity');
+            butterfly.setAttribute('geometry', 'primitive: sphere; radius: 0.05');
+            butterfly.setAttribute('material', `color: ${['#FF69B4', '#FFD700', '#00CED1'][i]}`);
+            butterfly.setAttribute('position', `${Math.random() * 0.6 - 0.3} 0.8 ${Math.random() * 0.6 - 0.3}`);
+
+            butterfly.setAttribute('animation',
+              `property: position; to: ${Math.random() * 1.2 - 0.6} ${0.5 + Math.random() * 0.5} ${Math.random() * 1.2 - 0.6}; dur: ${2000 + Math.random() * 1000}; easing: easeInOutSine; loop: true; dir: alternate`);
+
+            marker.appendChild(butterfly);
+          }, i * 300);
+        }
+
+        this.el.setAttribute('animation__pulse',
+          'property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutSine; loop: true; dir: alternate');
       }
     });
   }
