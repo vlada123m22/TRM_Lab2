@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>AR Story: The Time Traveler's Journey</title>
+  <title>AR Story: The Garden of Life</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
   <!-- A-Frame -->
@@ -15,7 +15,7 @@
       margin: 0; 
       overflow: hidden; 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
     }
     
     .story-overlay {
@@ -23,7 +23,7 @@
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(139, 69, 19, 0.95);
       color: #fff;
       padding: 20px 30px;
       border-radius: 15px;
@@ -31,14 +31,14 @@
       text-align: center;
       z-index: 100;
       backdrop-filter: blur(10px);
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      border: 3px solid rgba(76, 175, 80, 0.6);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .story-overlay h2 {
       margin: 0 0 10px 0;
       font-size: 24px;
-      background: linear-gradient(90deg, #4CC3D9, #FFC65D);
+      background: linear-gradient(90deg, #4CAF50, #8BC34A, #FFC107);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -57,18 +57,19 @@
       transform: translateX(-50%);
       width: 80%;
       max-width: 400px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.2);
+      height: 12px;
+      background: rgba(139, 69, 19, 0.5);
       border-radius: 10px;
       overflow: hidden;
       z-index: 100;
+      border: 2px solid rgba(76, 175, 80, 0.6);
     }
     
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #4CC3D9, #FFC65D, #7BC8A4);
+      background: linear-gradient(90deg, #8B4513, #4CAF50, #FFC107);
       width: 0%;
-      transition: width 0.5s ease;
+      transition: width 0.8s ease;
       border-radius: 10px;
     }
     
@@ -99,6 +100,7 @@
     .hud button:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      background: rgba(76, 175, 80, 0.95);
     }
     
     .hud button:active {
@@ -110,25 +112,26 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(139, 69, 19, 0.95);
       color: #fff;
       padding: 40px;
       border-radius: 20px;
       text-align: center;
       z-index: 150;
       max-width: 80%;
+      border: 3px solid rgba(76, 175, 80, 0.8);
       animation: pulse 2s infinite;
     }
     
     @keyframes pulse {
-      0%, 100% { opacity: 0.9; }
-      50% { opacity: 1; }
+      0%, 100% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
     }
     
     .instruction h1 {
       margin: 0 0 20px 0;
       font-size: 28px;
-      color: #4CC3D9;
+      color: #8BC34A;
     }
     
     .instruction p {
@@ -138,6 +141,27 @@
     }
     
     .hidden { display: none !important; }
+
+    .tap-hint {
+      position: fixed;
+      top: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 193, 7, 0.95);
+      color: #000;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 100;
+      animation: bounce 1s infinite;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
   </style>
 
   <script>
@@ -146,26 +170,29 @@
     marker1Scanned: false,
     marker2Scanned: false,
     marker3Scanned: false,
+    seedPlanted: false,
+    plantGrown: false,
+    flowerBloomed: false,
     currentChapter: 0,
     totalChapters: 3
   };
 
   const storyTexts = {
     0: {
-      title: "The Journey Begins",
-      text: "Scan Marker 1 to discover the Ancient Portal..."
+      title: "🌱 The Garden of Life 🌱",
+      text: "Find the SOIL marker to begin your garden..."
     },
     1: {
-      title: "Chapter 1: The Ancient Portal",
-      text: "You've discovered a mysterious portal! Now find Marker 2 to continue your journey through time..."
+      title: "Chapter 1: The Fertile Soil",
+      text: "You've found rich soil! TAP the seed to plant it and watch it grow... 🌰"
     },
     2: {
-      title: "Chapter 2: The Crystal of Time",
-      text: "The crystal pulses with energy! Seek Marker 3 to unlock the final secret..."
+      title: "Chapter 2: The Young Sprout",
+      text: "Your seed has sprouted! Now find the PLANT marker to continue the journey... 🌿"
     },
     3: {
-      title: "Chapter 3: The Guardian's Gift",
-      text: "You've completed your journey! The Time Traveler's treasure is revealed. Interact with all objects to explore!"
+      title: "Chapter 3: The Beautiful Flower",
+      text: "Your plant has bloomed into a magnificent flower! TAP it to attract butterflies! 🌸🦋"
     }
   };
 
@@ -187,6 +214,14 @@
     if (storyState.currentChapter > 0) {
       document.getElementById('instruction').classList.add('hidden');
     }
+
+    // Show tap hint for marker 1
+    const tapHint = document.getElementById('tap-hint');
+    if (storyState.currentChapter === 1 && !storyState.seedPlanted) {
+      tapHint.classList.remove('hidden');
+    } else {
+      tapHint.classList.add('hidden');
+    }
   }
 
   // Marker visibility components
@@ -199,33 +234,43 @@
       this.el.addEventListener('markerFound', () => {
         console.log(`Marker ${this.data.markerNum} found`);
         
-        // Check progression rules
+        // MARKER 1: SOIL
         if (this.data.markerNum === 1) {
           storyState.marker1Scanned = true;
           if (storyState.currentChapter === 0) {
             storyState.currentChapter = 1;
             updateStory();
           }
-        } else if (this.data.markerNum === 2) {
-          if (storyState.marker1Scanned) {
+        } 
+        // MARKER 2: PLANT (only visible if seed was planted)
+        else if (this.data.markerNum === 2) {
+          if (storyState.marker1Scanned && storyState.seedPlanted) {
             storyState.marker2Scanned = true;
-            if (storyState.currentChapter === 1) {
-              storyState.currentChapter = 2;
-              updateStory();
+            if (storyState.currentChapter === 2) {
+              storyState.plantGrown = true;
+              // Auto-grow the plant after a moment
+              setTimeout(() => {
+                const plant = document.getElementById('small-plant');
+                if (plant) {
+                  plant.emit('grow-plant');
+                }
+              }, 500);
             }
           } else {
-            // Hide marker2 content if marker1 not scanned yet
+            // Hide marker2 content if marker1 seed not planted yet
             this.el.setAttribute('visible', false);
           }
-        } else if (this.data.markerNum === 3) {
-          if (storyState.marker1Scanned && storyState.marker2Scanned) {
+        } 
+        // MARKER 3: FLOWER (only visible if plant grown)
+        else if (this.data.markerNum === 3) {
+          if (storyState.marker1Scanned && storyState.marker2Scanned && storyState.plantGrown) {
             storyState.marker3Scanned = true;
-            if (storyState.currentChapter === 2) {
+            if (storyState.currentChapter < 3) {
               storyState.currentChapter = 3;
               updateStory();
             }
           } else {
-            // Hide marker3 content if previous markers not scanned
+            // Hide marker3 content if previous markers not completed
             this.el.setAttribute('visible', false);
           }
         }
@@ -237,51 +282,110 @@
     }
   });
 
-  // Interactive object component
-  AFRAME.registerComponent('interactive-object', {
-    schema: {
-      type: {type: 'string', default: 'spin'}
-    },
-    
+  // Seed planting interaction
+  AFRAME.registerComponent('plantable-seed', {
     init() {
-      this.spinning = false;
+      this.planted = false;
       
-      // Click/tap interaction
       this.el.addEventListener('click', () => {
-        if (this.data.type === 'spin') {
-          this.spinning = !this.spinning;
-          if (this.spinning) {
-            this.el.setAttribute('animation', 
-              'property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear');
-          } else {
-            this.el.removeAttribute('animation');
-          }
-        } else if (this.data.type === 'color') {
-          const colors = ['#4CC3D9', '#FFC65D', '#7BC8A4', '#EF2D5E', '#FF6B6B', '#4ECDC4'];
-          const randomColor = colors[Math.floor(Math.random() * colors.length)];
-          this.el.setAttribute('material', 'color', randomColor);
-        } else if (this.data.type === 'scale') {
-          const currentScale = this.el.getAttribute('scale');
-          const newScale = currentScale.x === 1 ? 1.5 : 1;
-          this.el.setAttribute('animation__scale',
-            `property: scale; to: ${newScale} ${newScale} ${newScale}; dur: 500; easing: easeInOutQuad`);
+        if (!this.planted && storyState.marker1Scanned && !storyState.seedPlanted) {
+          this.planted = true;
+          storyState.seedPlanted = true;
+          
+          // Animate seed going down into soil
+          this.el.setAttribute('animation', 
+            'property: position; to: 0 -0.1 0; dur: 800; easing: easeInQuad');
+          
+          // After planting, show sprout
+          setTimeout(() => {
+            this.el.setAttribute('visible', false);
+            const sprout = document.getElementById('sprout');
+            if (sprout) {
+              sprout.setAttribute('visible', true);
+              sprout.emit('grow');
+            }
+            
+            // Advance to chapter 2
+            storyState.currentChapter = 2;
+            updateStory();
+          }, 1000);
         }
       });
     }
   });
 
-  // Floating animation
-  AFRAME.registerComponent('float', {
-    schema: {
-      speed: {type: 'number', default: 2000},
-      height: {type: 'number', default: 0.2}
-    },
-    
+  // Sprout growing animation
+  AFRAME.registerComponent('growing-sprout', {
     init() {
-      const pos = this.el.getAttribute('position');
-      this.el.setAttribute('animation__float',
-        `property: position; to: ${pos.x} ${pos.y + this.data.height} ${pos.z}; 
-         dir: alternate; loop: true; dur: ${this.data.speed}; easing: easeInOutSine`);
+      this.el.addEventListener('grow', () => {
+        // Start small and grow
+        this.el.setAttribute('scale', '0.01 0.01 0.01');
+        this.el.setAttribute('animation__scale', 
+          'property: scale; to: 1 1 1; dur: 2000; easing: easeOutElastic');
+      });
+    }
+  });
+
+  // Plant growing component
+  AFRAME.registerComponent('plant-grower', {
+    init() {
+      this.el.addEventListener('grow-plant', () => {
+        // Animate leaves spreading
+        const leaves = this.el.querySelectorAll('.leaf');
+        leaves.forEach((leaf, i) => {
+          setTimeout(() => {
+            leaf.setAttribute('animation', 
+              'property: scale; to: 1.5 1.5 1.5; dur: 1000; easing: easeOutBack');
+          }, i * 200);
+        });
+        
+        // Make stem taller
+        const stem = this.el.querySelector('.stem');
+        if (stem) {
+          stem.setAttribute('animation',
+            'property: height; to: 0.8; dur: 1500; easing: easeOutQuad');
+        }
+      });
+    }
+  });
+
+  // Flower interaction - attracts butterflies
+  AFRAME.registerComponent('flower-interactive', {
+    init() {
+      this.butterfliesSpawned = false;
+      
+      this.el.addEventListener('click', () => {
+        if (!this.butterfliesSpawned && storyState.marker3Scanned) {
+          this.butterfliesSpawned = true;
+          storyState.flowerBloomed = true;
+          
+          // Spawn butterflies
+          const marker = this.el.parentEl;
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              const butterfly = document.createElement('a-entity');
+              butterfly.setAttribute('geometry', 'primitive: sphere; radius: 0.05');
+              butterfly.setAttribute('material', `color: ${['#FF69B4', '#FFD700', '#00CED1'][i]}; emissive: ${['#FF69B4', '#FFD700', '#00CED1'][i]}; emissiveIntensity: 0.5`);
+              butterfly.setAttribute('position', `${Math.random() * 0.6 - 0.3} 0.8 ${Math.random() * 0.6 - 0.3}`);
+              
+              // Butterfly flight animation
+              butterfly.setAttribute('animation',
+                `property: position; 
+                 to: ${Math.random() * 1.2 - 0.6} ${0.5 + Math.random() * 0.5} ${Math.random() * 1.2 - 0.6}; 
+                 dur: ${2000 + Math.random() * 1000}; 
+                 easing: easeInOutSine; 
+                 loop: true; 
+                 dir: alternate`);
+              
+              marker.appendChild(butterfly);
+            }, i * 300);
+          }
+          
+          // Flower pulse animation
+          this.el.setAttribute('animation__pulse',
+            'property: scale; to: 1.2 1.2 1.2; dur: 1000; easing: easeInOutSine; loop: true; dir: alternate');
+        }
+      });
     }
   });
   </script>
@@ -289,16 +393,18 @@
 <body>
   <!-- Initial instruction -->
   <div class="instruction" id="instruction">
-    <h1>🌟 The Time Traveler's Journey 🌟</h1>
-    <p>Scan the markers in order to unlock the story:</p>
-    <p><strong>Marker 1</strong> → <strong>Marker 2</strong> → <strong>Marker 3</strong></p>
-    <p>Tap on objects to interact with them!</p>
+    <h1>🌱 The Garden of Life 🌱</h1>
+  </div>
+
+  <!-- Tap hint -->
+  <div class="tap-hint hidden" id="tap-hint">
+    👆 TAP the seed to plant it!
   </div>
 
   <!-- Story overlay -->
   <div class="story-overlay" id="story-overlay">
-    <h2 id="story-title">The Journey Begins</h2>
-    <p id="story-text">Scan Marker 1 to discover the Ancient Portal...</p>
+    <h2 id="story-title">🌱 The Garden of Life 🌱</h2>
+    <p id="story-text">Find the SOIL marker to begin your garden...</p>
   </div>
 
   <!-- Progress bar -->
@@ -308,9 +414,9 @@
 
   <!-- Control HUD -->
   <div class="hud">
-    <button id="btn-reset" title="Reset Story">🔄</button>
+    <button id="btn-reset" title="Reset Garden">🔄</button>
     <button id="btn-help" title="Show Help">❓</button>
-    <button id="btn-info" title="Story Info">📖</button>
+    <button id="btn-info" title="Garden Info">🌿</button>
   </div>
 
   <a-scene
@@ -323,11 +429,11 @@
     <a-entity camera></a-entity>
 
     <!-- Lights -->
-    <a-entity light="type: ambient; intensity: 0.7; color: #FFF"></a-entity>
-    <a-entity light="type: directional; intensity: 0.8; color: #FFF" position="1 2 1"></a-entity>
-    <a-entity light="type: point; intensity: 0.5; color: #4CC3D9" position="0 3 0"></a-entity>
+    <a-entity light="type: ambient; intensity: 0.8; color: #FFF"></a-entity>
+    <a-entity light="type: directional; intensity: 0.9; color: #FFFACD" position="2 3 1"></a-entity>
+    <a-entity light="type: point; intensity: 0.6; color: #8BC34A" position="0 2 0"></a-entity>
 
-    <!-- MARKER 1: The Portal (Torus - spinning ring) -->
+    <!-- MARKER 1: SOIL - Seed that can be planted -->
     <a-nft
       type="nft"
       url="markers/marker1"
@@ -337,48 +443,79 @@
       smoothThreshold="5"
       marker-handler="markerNum: 1">
       
-      <!-- Portal ring -->
-      <a-torus
-        position="0 0.5 0"
-        radius="0.4"
-        radius-tubular="0.08"
-        material="color: #4CC3D9; metalness: 0.8; roughness: 0.2; emissive: #4CC3D9; emissiveIntensity: 0.5"
-        rotation="90 0 0"
-        interactive-object="type: spin"
-        float="speed: 3000; height: 0.15">
-        
-        <!-- Inner glow -->
-        <a-ring
-          position="0 0 0"
-          radius-inner="0.25"
-          radius-outer="0.35"
-          material="color: #FFC65D; opacity: 0.6; transparent: true; side: double"
-          animation="property: rotation; to: 0 0 360; loop: true; dur: 8000; easing: linear">
-        </a-ring>
-      </a-torus>
+      <!-- Soil base -->
+      <a-cylinder
+        position="0 0.05 0"
+        radius="0.5"
+        height="0.1"
+        material="color: #8B4513; roughness: 1">
+      </a-cylinder>
       
-      <!-- Orbiting particles -->
-      <a-sphere
-        position="0.4 0.5 0"
-        radius="0.05"
-        material="color: #FFC65D; emissive: #FFC65D; emissiveIntensity: 0.8"
-        animation="property: object3D.position.x; to: -0.4; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"
-        animation__y="property: object3D.position.y; to: 0.8; dir: alternate; loop: true; dur: 1500; easing: easeInOutSine">
-      </a-sphere>
+      <!-- Seed (clickable to plant) -->
+      <a-entity id="seed" position="0 0.2 0" plantable-seed>
+        <a-sphere
+          radius="0.08"
+          material="color: #D2691E; roughness: 0.8"
+          animation="property: position; to: 0 0.05 0; dur: 1500; easing: easeInOutSine; loop: true; dir: alternate">
+          
+          <!-- Seed shine -->
+          <a-sphere
+            position="0.03 0.03 0.03"
+            radius="0.03"
+            material="color: #F4A460; emissive: #F4A460; emissiveIntensity: 0.5">
+          </a-sphere>
+        </a-sphere>
+        
+        <!-- Floating sparkles around seed -->
+        <a-sphere
+          position="0.15 0 0"
+          radius="0.02"
+          material="color: #FFD700; emissive: #FFD700; emissiveIntensity: 1"
+          animation="property: position; to: -0.15 0.1 0; loop: true; dur: 2000; easing: easeInOutSine">
+        </a-sphere>
+      </a-entity>
+      
+      <!-- Sprout (appears after planting) -->
+      <a-entity id="sprout" visible="false" growing-sprout>
+        <!-- Stem -->
+        <a-cylinder
+          position="0 0.15 0"
+          radius="0.02"
+          height="0.3"
+          material="color: #228B22; roughness: 0.6">
+        </a-cylinder>
+        
+        <!-- Small leaves -->
+        <a-cone
+          position="-0.08 0.25 0"
+          radius-bottom="0.06"
+          radius-top="0"
+          height="0.15"
+          rotation="0 0 -45"
+          material="color: #32CD32; roughness: 0.5">
+        </a-cone>
+        <a-cone
+          position="0.08 0.25 0"
+          radius-bottom="0.06"
+          radius-top="0"
+          height="0.15"
+          rotation="0 0 45"
+          material="color: #32CD32; roughness: 0.5">
+        </a-cone>
+      </a-entity>
       
       <!-- Text label -->
       <a-text
-        value="Ancient Portal"
-        position="0 0 0"
+        value="Fertile Soil"
+        position="0 -0.1 0"
         align="center"
-        color="#FFFFFF"
+        color="#8B4513"
         width="2"
-        material="shader: flat"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+        material="shader: flat">
       </a-text>
     </a-nft>
 
-    <!-- MARKER 2: The Crystal (Octahedron - crystal shape) -->
+    <!-- MARKER 2: SMALL PLANT - Grows when detected -->
     <a-nft
       type="nft"
       url="markers/marker2"
@@ -388,55 +525,88 @@
       smoothThreshold="5"
       marker-handler="markerNum: 2">
       
-      <!-- Crystal structure -->
-      <a-octahedron
-        position="0 0.6 0"
-        radius="0.3"
-        material="color: #7BC8A4; metalness: 0.9; roughness: 0.1; emissive: #7BC8A4; emissiveIntensity: 0.6; transparent: true; opacity: 0.9"
-        interactive-object="type: color"
-        float="speed: 2500; height: 0.2"
-        animation="property: rotation; to: 0 360 360; loop: true; dur: 10000; easing: linear">
+      <a-entity id="small-plant" plant-grower>
+        <!-- Main stem -->
+        <a-cylinder
+          class="stem"
+          position="0 0.25 0"
+          radius="0.04"
+          height="0.5"
+          material="color: #228B22; roughness: 0.6">
+        </a-cylinder>
         
-        <!-- Inner core -->
-        <a-sphere
-          position="0 0 0"
-          radius="0.15"
-          material="color: #FFC65D; emissive: #FFC65D; emissiveIntensity: 1"
-          animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 1000; easing: easeInOutSine">
-        </a-sphere>
-      </a-octahedron>
+        <!-- Leaves (will animate on growth) -->
+        <a-cone
+          class="leaf"
+          position="-0.15 0.3 0"
+          radius-bottom="0.12"
+          radius-top="0"
+          height="0.25"
+          rotation="0 0 -60"
+          material="color: #00FF00; roughness: 0.5; metalness: 0.2">
+        </a-cone>
+        
+        <a-cone
+          class="leaf"
+          position="0.15 0.3 0"
+          radius-bottom="0.12"
+          radius-top="0"
+          height="0.25"
+          rotation="0 0 60"
+          material="color: #00FF00; roughness: 0.5; metalness: 0.2">
+        </a-cone>
+        
+        <a-cone
+          class="leaf"
+          position="-0.12 0.45 0.08"
+          radius-bottom="0.1"
+          radius-top="0"
+          height="0.2"
+          rotation="20 0 -50"
+          material="color: #32CD32; roughness: 0.5; metalness: 0.2">
+        </a-cone>
+        
+        <a-cone
+          class="leaf"
+          position="0.12 0.45 -0.08"
+          radius-bottom="0.1"
+          radius-top="0"
+          height="0.2"
+          rotation="-20 0 50"
+          material="color: #32CD32; roughness: 0.5; metalness: 0.2">
+        </a-cone>
+        
+        <!-- Gentle sway animation -->
+        <a-animation
+          attribute="rotation"
+          to="0 5 0"
+          dur="3000"
+          easing="easeInOutSine"
+          direction="alternate"
+          repeat="indefinite">
+        </a-animation>
+      </a-entity>
       
-      <!-- Energy rings -->
-      <a-ring
-        position="0 0.6 0"
-        radius-inner="0.35"
-        radius-outer="0.4"
-        material="color: #4CC3D9; opacity: 0.5; transparent: true; side: double"
-        rotation="0 0 0"
-        animation="property: rotation; to: 360 0 0; loop: true; dur: 3000; easing: linear">
-      </a-ring>
-      
-      <a-ring
-        position="0 0.6 0"
-        radius-inner="0.35"
-        radius-outer="0.4"
-        material="color: #EF2D5E; opacity: 0.5; transparent: true; side: double"
-        rotation="90 0 0"
-        animation="property: rotation; to: 90 360 0; loop: true; dur: 3000; easing: linear; delay: 1000">
-      </a-ring>
+      <!-- Soil base for plant -->
+      <a-cylinder
+        position="0 0.05 0"
+        radius="0.4"
+        height="0.1"
+        material="color: #8B4513; roughness: 1">
+      </a-cylinder>
       
       <!-- Text label -->
       <a-text
-        value="Crystal of Time"
-        position="0 0.1 0"
+        value="Young Sprout"
+        position="0 -0.1 0"
         align="center"
-        color="#FFFFFF"
+        color="#228B22"
         width="2"
         material="shader: flat">
       </a-text>
     </a-nft>
 
-    <!-- MARKER 3: The Guardian (Complex sculpture) -->
+    <!-- MARKER 3: FLOWER - Attracts butterflies on tap -->
     <a-nft
       type="nft"
       url="markers/marker3"
@@ -446,115 +616,117 @@
       smoothThreshold="5"
       marker-handler="markerNum: 3">
       
-      <!-- Guardian body (cylinder) -->
+      <!-- Flower stem -->
       <a-cylinder
-        position="0 0.4 0"
-        radius="0.15"
-        height="0.5"
-        material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
-        interactive-object="type: scale">
-        
-        <!-- Head (sphere) -->
-        <a-sphere
-          position="0 0.35 0"
-          radius="0.2"
-          material="color: #FFC65D; metalness: 0.8; roughness: 0.2; emissive: #FFC65D; emissiveIntensity: 0.3">
-          
-          <!-- Eyes -->
-          <a-sphere
-            position="-0.08 0.05 0.15"
-            radius="0.04"
-            material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
-            animation="property: material.emissiveIntensity; to: 0.3; dir: alternate; loop: true; dur: 800">
-          </a-sphere>
-          <a-sphere
-            position="0.08 0.05 0.15"
-            radius="0.04"
-            material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
-            animation="property: material.emissiveIntensity; to: 0.3; dir: alternate; loop: true; dur: 800">
-          </a-sphere>
-        </a-sphere>
-        
-        <!-- Arms -->
-        <a-cylinder
-          position="-0.2 0 0"
-          radius="0.05"
-          height="0.4"
-          rotation="0 0 45"
-          material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
-          animation="property: rotation; to: 0 0 -45; dir: alternate; loop: true; dur: 2000">
-        </a-cylinder>
-        <a-cylinder
-          position="0.2 0 0"
-          radius="0.05"
-          height="0.4"
-          rotation="0 0 -45"
-          material="color: #EF2D5E; metalness: 0.7; roughness: 0.3"
-          animation="property: rotation; to: 0 0 45; dir: alternate; loop: true; dur: 2000">
-        </a-cylinder>
+        position="0 0.35 0"
+        radius="0.03"
+        height="0.7"
+        material="color: #228B22; roughness: 0.6">
       </a-cylinder>
       
-      <!-- Treasure chest at base -->
-      <a-box
-        position="0 0.15 0.3"
-        width="0.3"
-        height="0.2"
-        depth="0.2"
-        material="color: #8B4513; metalness: 0.5; roughness: 0.7">
+      <!-- Flower head (clickable to spawn butterflies) -->
+      <a-entity id="flower-head" position="0 0.7 0" flower-interactive>
+        <!-- Center of flower -->
+        <a-sphere
+          radius="0.1"
+          material="color: #FFD700; emissive: #FFD700; emissiveIntensity: 0.4; roughness: 0.4">
+        </a-sphere>
         
-        <!-- Chest lid -->
-        <a-box
-          position="0 0.12 0"
-          width="0.32"
-          height="0.05"
-          depth="0.22"
-          material="color: #A0522D; metalness: 0.5; roughness: 0.7"
-          rotation="-30 0 0"
-          animation="property: rotation; to: 30 0 0; dir: alternate; loop: true; dur: 3000; easing: easeInOutQuad">
-        </a-box>
+        <!-- Petals (6 petals arranged in circle) -->
+        <a-cone
+          position="0 0 0.15"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 0 0"
+          material="color: #FF69B4; roughness: 0.3">
+        </a-cone>
+        <a-cone
+          position="0.13 0 0.075"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 60 0"
+          material="color: #FF1493; roughness: 0.3">
+        </a-cone>
+        <a-cone
+          position="0.13 0 -0.075"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 120 0"
+          material="color: #FF69B4; roughness: 0.3">
+        </a-cone>
+        <a-cone
+          position="0 0 -0.15"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 180 0"
+          material="color: #FF1493; roughness: 0.3">
+        </a-cone>
+        <a-cone
+          position="-0.13 0 -0.075"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 240 0"
+          material="color: #FF69B4; roughness: 0.3">
+        </a-cone>
+        <a-cone
+          position="-0.13 0 0.075"
+          radius-bottom="0.12"
+          radius-top="0.02"
+          height="0.2"
+          rotation="90 300 0"
+          material="color: #FF1493; roughness: 0.3">
+        </a-cone>
         
-        <!-- Gold coins -->
-        <a-cylinder
-          position="0 0.15 0"
-          radius="0.08"
-          height="0.02"
-          material="color: #FFD700; metalness: 1; roughness: 0.2; emissive: #FFD700; emissiveIntensity: 0.5">
-        </a-cylinder>
-      </a-box>
+        <!-- Gentle rotation -->
+        <a-animation
+          attribute="rotation"
+          to="0 360 0"
+          dur="20000"
+          easing="linear"
+          repeat="indefinite">
+        </a-animation>
+      </a-entity>
+      
+      <!-- Leaves on stem -->
+      <a-cone
+        position="-0.12 0.4 0"
+        radius-bottom="0.08"
+        radius-top="0"
+        height="0.15"
+        rotation="0 0 -70"
+        material="color: #32CD32; roughness: 0.5">
+      </a-cone>
+      <a-cone
+        position="0.12 0.5 0"
+        radius-bottom="0.08"
+        radius-top="0"
+        height="0.15"
+        rotation="0 0 70"
+        material="color: #32CD32; roughness: 0.5">
+      </a-cone>
+      
+      <!-- Soil base -->
+      <a-cylinder
+        position="0 0.05 0"
+        radius="0.35"
+        height="0.1"
+        material="color: #8B4513; roughness: 1">
+      </a-cylinder>
       
       <!-- Text label -->
       <a-text
-        value="Guardian's Gift"
+        value="Beautiful Flower"
         position="0 0 0"
         align="center"
-        color="#FFFFFF"
+        color="#FF1493"
         width="2"
-        material="shader: flat"
-        float="speed: 4000; height: 0.1">
+        material="shader: flat">
       </a-text>
-      
-      <!-- Victory particles -->
-      <a-sphere
-        position="0 0.8 0"
-        radius="0.03"
-        material="color: #FFD700; emissive: #FFD700; emissiveIntensity: 1"
-        animation="property: position; to: 0.3 1.2 0.3; loop: true; dur: 2000"
-        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000">
-      </a-sphere>
-      <a-sphere
-        position="0 0.8 0"
-        radius="0.03"
-        material="color: #4CC3D9; emissive: #4CC3D9; emissiveIntensity: 1"
-        animation="property: position; to: -0.3 1.2 -0.3; loop: true; dur: 2000; delay: 666"
-        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000; delay: 666">
-      </a-sphere>
-      <a-sphere
-        position="0 0.8 0"
-        radius="0.03"
-        material="color: #EF2D5E; emissive: #EF2D5E; emissiveIntensity: 1"
-        animation="property: position; to: 0.3 1.2 -0.3; loop: true; dur: 2000; delay: 1333"
-        animation__opacity="property: material.opacity; to: 0; loop: true; dur: 2000; delay: 1333">
-      </a-sphere>
     </a-nft>
 
   </a-scene>
@@ -565,12 +737,7 @@
 
     // Button handlers
     document.getElementById('btn-reset').addEventListener('click', () => {
-      storyState.marker1Scanned = false;
-      storyState.marker2Scanned = false;
-      storyState.marker3Scanned = false;
-      storyState.currentChapter = 0;
-      updateStory();
-      document.getElementById('instruction').classList.remove('hidden');
+      location.reload(); // Simple reset by reloading
     });
 
     document.getElementById('btn-help').addEventListener('click', () => {
@@ -579,14 +746,12 @@
     });
 
     document.getElementById('btn-info').addEventListener('click', () => {
-      const scanned = [];
-      if (storyState.marker1Scanned) scanned.push('Marker 1 ✓');
-      if (storyState.marker2Scanned) scanned.push('Marker 2 ✓');
-      if (storyState.marker3Scanned) scanned.push('Marker 3 ✓');
-      
-      const message = scanned.length > 0 
-        ? `Progress: ${scanned.join(', ')}` 
-        : 'No markers scanned yet. Start with Marker 1!';
+      let message = "Garden Progress:\n\n";
+      message += storyState.marker1Scanned ? "✓ Soil found\n" : "○ Find the soil\n";
+      message += storyState.seedPlanted ? "✓ Seed planted\n" : "○ Plant the seed\n";
+      message += storyState.marker2Scanned ? "✓ Plant growing\n" : "○ Watch it grow\n";
+      message += storyState.marker3Scanned ? "✓ Flower bloomed\n" : "○ See the flower\n";
+      message += storyState.flowerBloomed ? "✓ Butterflies attracted! 🦋" : "";
       
       alert(message);
     });
